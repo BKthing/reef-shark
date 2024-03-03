@@ -4,8 +4,13 @@ public class Pose2d {
     private final Vector2d vector2d;
     private final double heading;
 
-    public Pose2d(int x, int y, int heading) {
+    public Pose2d(double x, double y, double heading) {
         vector2d = new Vector2d(x, y);
+        this.heading = heading;
+    }
+
+    public Pose2d(Vector2d vector2d, double heading) {
+        this.vector2d = vector2d;
         this.heading = heading;
     }
 

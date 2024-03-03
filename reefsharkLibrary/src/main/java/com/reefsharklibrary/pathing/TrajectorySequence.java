@@ -23,4 +23,5 @@ public class TrajectorySequence {
     public Pose2d endPose() {
         return trajectories.get(trajectories.size()-1).endPose();
     }
+
 }
