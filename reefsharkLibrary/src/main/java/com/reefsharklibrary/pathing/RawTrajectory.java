@@ -54,6 +54,15 @@ public class RawTrajectory {
         this.pathDistance += totalDistance;
     }
 
+    public void addTangentSet(List<Pose2d> points, double totalDistance) {
+        //adds all but the first term to the list
+        for (int i = 1; i<points.size(); i++) {
+            positions.add(points.get(i));
+        }
+
+        this.pathDistance += totalDistance;
+    }
+
     public void addCallMarker(IndexCallMarker callMarker) {
         callMarkers.add(callMarker);
     }

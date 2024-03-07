@@ -96,14 +96,13 @@ public class TrajectorySequenceBuilder {
         return this;
     }
 
-
     public TrajectorySequenceBuilder addPath(Path pathSegment) {
-        if (!pathSegment.isTangent(currentTrajectory().getLastPose())) {
-            trajectories.add(
-                    new RawTrajectory(currentTrajectory().getTotalDistance())
-            );
+        if (pathSegment.isTangent(currentTrajectory().getLastPose())) {
+            currentTrajectory().addTangentSet(pathSegment.generate(resolution), pathSegment.totalDistance());
+        } else {
+            trajectories.add(new RawTrajectory(currentTrajectory().getTotalDistance()));
+            currentTrajectory().addSet(pathSegment.generate(resolution), pathSegment.totalDistance());
         }
-        currentTrajectory().addSet(pathSegment.generate(resolution), pathSegment.totalDistance());
 
         return this;
     }
@@ -127,7 +126,7 @@ public class TrajectorySequenceBuilder {
             }
 
             trajectories.get(i).addCallMarker(callMarker);
-
+            globalCallMarkers.clear();
         }
     }
 
