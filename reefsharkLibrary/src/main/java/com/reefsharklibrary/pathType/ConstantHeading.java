@@ -38,4 +38,14 @@ public class ConstantHeading implements Path {
     public Pose2d endPose() {
         return geometry.endPoint().toPose(heading);
     }
+
+    @Override
+    public double totalDistance() {
+        return geometry.getTotalDistance();
+    }
+
+    @Override
+    public boolean isTangent(Pose2d lastPose) {
+        return endPose() == lastPose;
+    }
 }

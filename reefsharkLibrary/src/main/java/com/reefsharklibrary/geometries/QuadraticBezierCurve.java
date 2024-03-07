@@ -4,22 +4,19 @@ import com.reefsharklibrary.data.Vector2d;
 
 import java.util.function.Function;
 
-public class CubicBezierCurve implements Geometry {
+public class QuadraticBezierCurve implements Geometry {
     private final Vector2d startPoint;
     private final Vector2d endPoint;
-//    private final Vector2d difference;
-//    private final double distance;
+
     private final Function<Double, Double> x;
     private final Function<Double, Double> y;
-//    private final Function<Double, Double> angle;
 
-    public CubicBezierCurve(Vector2d p1, Vector2d p2, Vector2d p3, Vector2d p4) {
+    public QuadraticBezierCurve(Vector2d p1, Vector2d p2, Vector2d p3) {
+        x = (Double d) -> Math.pow(1-d, 2)*p1.getX() + 2*(1-d)*d*p2.getX()+Math.pow(d, 2)*p3.getX();
+        y = (Double d) -> Math.pow(1-d, 2)*p1.getY() + 2*(1-d)*d*p2.getY()+Math.pow(d, 2)*p3.getY();
+
         startPoint = p1;
-        endPoint = p4;
-
-        x = (Double d) -> Math.pow(1-d, 3)*p1.getX() + 3*Math.pow(1-d, 2)*d*p2.getX() + 3*(d-1)*Math.pow(d, 2)*p3.getX() + Math.pow(d, 3)*p4.getX();
-        y = (Double d) -> Math.pow(1-d, 3)*p1.getY() + 3*Math.pow(1-d, 2)*d*p2.getY() + 3*(d-1)*Math.pow(d, 2)*p3.getY() + Math.pow(d, 3)*p4.getY();
-
+        endPoint = p3;
     }
 
     @Override

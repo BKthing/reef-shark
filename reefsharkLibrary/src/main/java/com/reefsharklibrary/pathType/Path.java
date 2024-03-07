@@ -9,4 +9,8 @@ public interface Path {
 
     Pose2d startPose();
     Pose2d endPose();
+
+    double totalDistance();
+
+    boolean isTangent(Pose2d lastPose);
 }

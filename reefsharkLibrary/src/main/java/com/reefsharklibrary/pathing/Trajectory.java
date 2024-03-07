@@ -19,6 +19,7 @@ public class Trajectory {
     private final Pose2d endError;
 
     private final double endDelay;
+    private final double minTime;
 
 
     public Trajectory(
@@ -28,7 +29,8 @@ public class Trajectory {
             List<TemporalCallMarker> localTemporalMarkers,
             Pose2d followError,
             Pose2d endError,
-            double endDelay
+            double endDelay,
+            double minTime
     ) {
         this.positions = positions;
         this.motionStates = motionStates;
@@ -37,6 +39,7 @@ public class Trajectory {
         this.followError = followError;
         this.endError = endError;
         this.endDelay = endDelay;
+        this.minTime = minTime;
     }
 
     public Pose2d startPose() {

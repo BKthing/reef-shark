@@ -1,12 +1,21 @@
 package com.reefsharklibrary.pathing.data;
 
-public class IndexCallMarker {
-    private final int callPosition;
+public class IndexCallMarker implements Comparable<IndexCallMarker> {
+    private final double callDistance;
+    private int callPosition;
     private final MarkerExecutable executable;
 
-    public IndexCallMarker(int callPosition, MarkerExecutable executable) {
-        this.callPosition = callPosition;
+    public IndexCallMarker(double callDistance, MarkerExecutable executable) {
+        this.callDistance = callDistance;
         this.executable = executable;
+    }
+
+    public double getCallDistance() {
+        return callDistance;
+    }
+
+    public void setCallPosition(int callPosition) {
+        this.callPosition = callPosition;
     }
 
     public int getCallPosition() {
@@ -15,5 +24,10 @@ public class IndexCallMarker {
 
     public void run() {
         executable.run();
+    }
+
+    @Override
+    public int compareTo(IndexCallMarker callMarker) {
+        return Double.compare(callDistance, callMarker.callDistance);
     }
 }

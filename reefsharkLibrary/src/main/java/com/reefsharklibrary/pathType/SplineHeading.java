@@ -45,4 +45,9 @@ public class SplineHeading implements Path {
     public Pose2d endPose() {
         return geometry.endPoint().toPose(endHeading);
     }
+
+    @Override
+    public double totalDistance() {
+        return geometry.getTotalDistance();
+    }
 }
