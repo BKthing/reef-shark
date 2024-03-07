@@ -49,4 +49,9 @@ public class LinearHeading implements Path {
     public double totalDistance() {
         return geometry.getTotalDistance();
     }
+
+    @Override
+    public boolean isTangent(Pose2d lastPose) {
+        return endPose() == lastPose;
+    }
 }
