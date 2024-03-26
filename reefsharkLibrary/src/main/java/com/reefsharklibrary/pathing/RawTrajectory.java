@@ -22,6 +22,8 @@ public class RawTrajectory {
     private double endDelay = 0;
     private double minTime = 0;
 
+    private double targetEndDistance = 6;
+
     private final double initialDistance;
     private double pathDistance = 0;
 
@@ -91,16 +93,22 @@ public class RawTrajectory {
         this.endDelay = endDelay;
     }
 
+    public void setTargetEndDistance(double targetEndDistance) {
+        this.targetEndDistance = targetEndDistance;
+    }
+
     public Trajectory build(ConstraintSet constraints, double resolution) {
         if (temporalCallMarkers.size()>0) {
             sortTemporalMarkers();
             minTime = temporalCallMarkers.get(temporalCallMarkers.size()-1).getCallTime();
         }
 
-        sortCallMarkers();
-        indexCallMarkers(resolution);
+        if (callMarkers.size()>0) {
+            sortCallMarkers();
+            indexCallMarkers(resolution);
+        }
 
-        return new Trajectory(positions, calculateVelocities(constraints), callMarkers, temporalCallMarkers, followError, endError, endDelay, minTime);
+        return new Trajectory(positions, calculateVelocities(constraints, resolution), callMarkers, temporalCallMarkers, followError, endError, endDelay, minTime, positions.size()- 1 - (int) (targetEndDistance/resolution));
     }
 
     private void sortTemporalMarkers() {
@@ -120,8 +128,58 @@ public class RawTrajectory {
         }
     }
 
-    private List<Pose2d> calculateVelocities(ConstraintSet constraints) {
+
+    //TODO: fix this
+    private List<Pose2d> calculateVelocities(ConstraintSet constraints, double resolution) {
         List<Pose2d> velocities = new ArrayList<>();
+
+        Pose2d prevVelocities = new Pose2d(0, 0, 0);
+
+        prevVelocities = findVelocities(positions.get(0), prevVelocities, constraints);
+        velocities.add(prevVelocities);
+
+        for (int i = 1; i<positions.size(); i++){
+
+            prevVelocities = findVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, constraints);
+            velocities.add(prevVelocities);
+        }
+
+        //bc its working backward we have to start an extra one back
+        int i = velocities.size()-3;
+
+        boolean decelerating = true;
+
+        //Setting the decel point at the end
+        prevVelocities = findVelocities(positions.get(positions.size()-1).minus(positions.get(positions.size()-2)), new Pose2d(0, 0,0), constraints);
+        velocities.add(velocities.size()-2, prevVelocities);
+
+        while (decelerating) {
+            prevVelocities = findDecelVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, constraints);
+
+            if (poseLessThan(prevVelocities, velocities.get(i))) {
+                decelerating = false;
+            } else {
+                velocities.add(i, prevVelocities);
+                i--;
+            }
+        }
+
         return velocities;
+    }
+
+    private boolean poseLessThan(Pose2d pose1, Pose2d pose2) {
+        return pose1.getX()<pose1.getX() && pose1.getY()<pose1.getY() && pose1.getHeading()<pose1.getHeading();
+    }
+
+    private Pose2d findVelocities(Pose2d difference, Pose2d prevVelocities, ConstraintSet constraints) {
+        double distance = difference.getVector2d().getMagnitude();
+
+        Pose2d velocityDirection = difference.minus(prevVelocities);
+
+        return new Pose2d(0, 0, velocityDirection.getHeading()*distance*constraints.getMaxAngularAccel());
+    }
+
+    private Pose2d findDecelVelocities(Pose2d difference, Pose2d prevVelocities, ConstraintSet constraints) {
+
     }
 }

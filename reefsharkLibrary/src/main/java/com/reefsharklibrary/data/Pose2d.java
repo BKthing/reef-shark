@@ -33,4 +33,33 @@ public class Pose2d {
     public Vector2d getVector2d() {
         return vector2d;
     }
+
+    public Pose2d scale(double scale) {
+        return new Pose2d(vector2d.scale(scale), heading*scale);
+    }
+
+    public Pose2d minus(Pose2d pose) {
+        return new Pose2d(vector2d.minus(pose.getVector2d()), heading-pose.heading);
+    }
+
+    public Pose2d plus(Pose2d pose) {
+        return new Pose2d(vector2d.plus(pose.getVector2d()), heading+pose.heading);
+    }
+
+    public Pose2d sqr() {
+        return vector2d.sqr().toPose(heading*heading);
+    }
+
+    public Pose2d sqrt() {
+        return vector2d.sqrt().toPose(Math.sqrt(heading));
+    }
+
+    //used to determine how close the robot is to a point
+    public double compareVal() {
+        return vector2d.compareVal()+Math.abs(heading*5);
+    }
+
+    public  boolean inRange(Pose2d pose) {
+        return Math.abs(heading) < pose.heading && vector2d.isInRange(pose.getVector2d());
+    }
 }

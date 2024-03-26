@@ -1,13 +1,17 @@
 package com.reefsharklibrary.pathing.data;
 
 public class IndexCallMarker implements Comparable<IndexCallMarker> {
-    private final double callDistance;
+    private double callDistance;
     private int callPosition;
     private final MarkerExecutable executable;
 
     public IndexCallMarker(double callDistance, MarkerExecutable executable) {
         this.callDistance = callDistance;
         this.executable = executable;
+    }
+
+    public void removeDistance(double distance) {
+        callDistance -= distance;
     }
 
     public double getCallDistance() {
