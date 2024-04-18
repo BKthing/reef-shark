@@ -4,9 +4,9 @@ public final class PIDCoeficients {
 
 
 
-    private final int p;
-    private final int i;
-    private final int d;
+    private final double p;
+    private final double i;
+    private final double d;
 
     /**
      * Contains values for a pid algorithm to use
@@ -15,7 +15,7 @@ public final class PIDCoeficients {
      * @param i integral
      * @param d derivative
      */
-    public PIDCoeficients(int p, int i, int d) {
+    public PIDCoeficients(double p, double i, double d) {
         this.p = p;
         this.i = i;
         this.d = d;
@@ -24,21 +24,21 @@ public final class PIDCoeficients {
     /**
      * @return p returns the p value specified for the function
      * */
-    public int getP() {
+    public double getP() {
         return p;
     }
 
     /**
      * @return p returns the p value specified for the function
      * */
-    public int getI() {
+    public double getI() {
         return i;
     }
 
     /**
      * @return p returns the p value specified for the function
      * */
-    public int getD() {
+    public double getD() {
         return d;
     }
 

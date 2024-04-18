@@ -31,6 +31,11 @@ class TwoWheelLocalizer implements Localizer {
     }
 
     @Override
+    public Pose2d getPoseAcceleration() {
+        return null;
+    }
+
+    @Override
     public Vector2d getCentrifugalForce() {
         return null;
     }

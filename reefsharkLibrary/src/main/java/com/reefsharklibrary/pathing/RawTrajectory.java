@@ -2,6 +2,7 @@ package com.reefsharklibrary.pathing;
 
 import com.reefsharklibrary.data.ConstraintSet;
 import com.reefsharklibrary.data.Pose2d;
+import com.reefsharklibrary.data.Vector2d;
 import com.reefsharklibrary.pathing.data.IndexCallMarker;
 import com.reefsharklibrary.pathing.data.TemporalCallMarker;
 
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Vector;
 
 public class RawTrajectory {
     private final List<Pose2d> positions = new ArrayList<>();
@@ -135,28 +137,29 @@ public class RawTrajectory {
 
         Pose2d prevVelocities = new Pose2d(0, 0, 0);
 
-        prevVelocities = findVelocities(positions.get(0), prevVelocities, constraints);
+        prevVelocities = findVelocities(positions.get(0), prevVelocities, positions.get(0).getHeading(), constraints);
         velocities.add(prevVelocities);
 
         for (int i = 1; i<positions.size(); i++){
 
-            prevVelocities = findVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, constraints);
+            prevVelocities = findVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, positions.get(0).getHeading(), constraints);
             velocities.add(prevVelocities);
         }
 
-        //bc its working backward we have to start an extra one back
-        int i = velocities.size()-3;
+        int i = velocities.size()-2;
 
         boolean decelerating = true;
 
         //Setting the decel point at the end
-        prevVelocities = findVelocities(positions.get(positions.size()-1).minus(positions.get(positions.size()-2)), new Pose2d(0, 0,0), constraints);
-        velocities.add(velocities.size()-2, prevVelocities);
+        //prevVel is set to 0's bc we want the robot to end with vel of 0's
+        prevVelocities = new Pose2d(0, 0, 0);
+        velocities.add(velocities.size()-1, prevVelocities);
 
         while (decelerating) {
             prevVelocities = findDecelVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, constraints);
 
-            if (poseLessThan(prevVelocities, velocities.get(i))) {
+            //i<2 prevents it from calling a negative index on the next loop, should never be true on a normal trajectory
+            if (poseLessThan(prevVelocities, velocities.get(i)) || i<2) {
                 decelerating = false;
             } else {
                 velocities.add(i, prevVelocities);
@@ -168,18 +171,22 @@ public class RawTrajectory {
     }
 
     private boolean poseLessThan(Pose2d pose1, Pose2d pose2) {
-        return pose1.getX()<pose1.getX() && pose1.getY()<pose1.getY() && pose1.getHeading()<pose1.getHeading();
+        return pose1.getX()<pose2.getX() && pose1.getY()<pose2.getY() && pose1.getHeading()<pose2.getHeading();
     }
 
-    private Pose2d findVelocities(Pose2d difference, Pose2d prevVelocities, ConstraintSet constraints) {
+    private Pose2d findVelocities(Pose2d difference, Pose2d prevVelocities, double heading, ConstraintSet constraints) {
         double distance = difference.getVector2d().getMagnitude();
+        double driveBaseDirection = difference.getVector2d().getDirection();
+        Vector2d adjustedAccel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearAccel(), heading);
+        Vector2d adjustedVel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearVel(), heading);
 
-        Pose2d velocityDirection = difference.minus(prevVelocities);
+        Pose2d unScaledVelocities = new Pose2d();
 
-        return new Pose2d(0, 0, velocityDirection.getHeading()*distance*constraints.getMaxAngularAccel());
+
+        return new Pose2d(0, 0, 0);
     }
 
     private Pose2d findDecelVelocities(Pose2d difference, Pose2d prevVelocities, ConstraintSet constraints) {
-
+        return new Pose2d(0, 0, 0);
     }
 }

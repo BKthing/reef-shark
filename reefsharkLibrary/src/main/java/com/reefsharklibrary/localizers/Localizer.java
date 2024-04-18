@@ -12,6 +12,8 @@ public interface Localizer {
     void setPoseEstimate(Pose2d pose);
 
     Pose2d getPoseVelocity();
+    Pose2d getPoseAcceleration();
+
     Vector2d getCentrifugalForce();
 
 }

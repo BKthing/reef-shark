@@ -41,6 +41,22 @@ public class Vector2d {
         return new Vector2d(x+vector.getX(), y+vector.getY());
     }
 
+    public Vector2d divide(Vector2d vector) {
+        return new Vector2d(x/vector.getX(), y/vector.getY());
+    }
+
+    public Vector2d multiply(Vector2d vector) {
+        return new Vector2d(x*vector.getX(), y*vector.getY());
+    }
+
+    public Vector2d divide(double divisionFactor) {
+        return new Vector2d(x/divisionFactor, y/divisionFactor);
+    }
+
+    public Vector2d multiply(double multiplicationFactor) {
+        return new Vector2d(x*multiplicationFactor, y*multiplicationFactor);
+    }
+
     public Vector2d sqr() {
         return new Vector2d(x*x, y*y);
     }

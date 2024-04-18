@@ -1,5 +1,7 @@
 package com.reefsharklibrary.data;
 
+import java.util.function.Function;
+
 public class ConstraintSet {
 
     private final VelConstraint velConstraint;
@@ -7,7 +9,7 @@ public class ConstraintSet {
     private final WheelBase wheelBase;
     private final AngVelConstraint angVelConstraint;
 
-    private final Vector2d naturalDecel;
+    private final Pose2d naturalDecel;
 
     private final PIDCoeficients lateralPID;
     private final PIDCoeficients headingPID;
@@ -15,7 +17,8 @@ public class ConstraintSet {
     private final double wheelBaseWidth;
     private final double wheelBaseRadius;
 
-    public ConstraintSet(PIDCoeficients lateralPID, PIDCoeficients headingPID, VelConstraint velConstraint, VelConstraint strafeVelConstraint, AngVelConstraint angVelConstraint, Vector2d naturalDecel, double wheelBaseWidth) {
+
+    public ConstraintSet(PIDCoeficients lateralPID, PIDCoeficients headingPID, VelConstraint velConstraint, VelConstraint strafeVelConstraint, AngVelConstraint angVelConstraint, Pose2d naturalDecel, double wheelBaseWidth) {
         this.angVelConstraint = angVelConstraint;
         this.velConstraint = velConstraint;
         this.strafeVelConstraint = strafeVelConstraint;
@@ -27,7 +30,7 @@ public class ConstraintSet {
         this.wheelBaseRadius = wheelBaseWidth/2;
     }
 
-    public ConstraintSet(PIDCoeficients lateralPID, PIDCoeficients headingPID, VelConstraint velConstraint, AngVelConstraint angVelConstraint, Vector2d naturalDecel, double wheelBaseWidth) {
+    public ConstraintSet(PIDCoeficients lateralPID, PIDCoeficients headingPID, VelConstraint velConstraint, AngVelConstraint angVelConstraint, Pose2d naturalDecel, double wheelBaseWidth) {
         this.angVelConstraint = angVelConstraint;
         this.velConstraint = velConstraint;
         this.strafeVelConstraint = velConstraint;
@@ -37,6 +40,26 @@ public class ConstraintSet {
         this.headingPID = headingPID;
         this.wheelBaseWidth = wheelBaseWidth;
         this.wheelBaseRadius = wheelBaseWidth/2;
+    }
+
+    /*
+    * Returns a vector with the achievable forward and strafe values of the robot at a certain heading
+    * given the max forward and strafe values
+    * this assumes a linear relationship between the forward and strafe vals
+    * */
+    public static Vector2d getAdjustedMecanumVector(Vector2d vel, double heading) {
+        //adjust heading to be in a valid range of the function
+        if (heading>2*Math.PI) {
+            heading = 2*Math.PI-heading;
+        } else if (heading>Math.PI) {
+            heading = heading-Math.PI;
+        } else if (heading>Math.PI/2) {
+            heading = Math.PI-heading;
+        }
+
+        double x = vel.getY()/(Math.tan(heading)+(vel.getY()/vel.getX()));
+
+        return new Vector2d(x, -(vel.getY()/vel.getX())*(x-vel.getX()));
     }
 
     public Vector2d getMaxLinearAccel() {
@@ -75,7 +98,7 @@ public class ConstraintSet {
         return getMaxLinearVel().toPose(getMaxAngularVel());
     }
 
-    public Vector2d getNaturalDecel() {
+    public Pose2d getNaturalDecel() {
         return naturalDecel;
     }
 

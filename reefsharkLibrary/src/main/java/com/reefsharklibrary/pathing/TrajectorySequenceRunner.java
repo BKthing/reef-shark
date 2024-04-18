@@ -38,11 +38,11 @@ public class TrajectorySequenceRunner {
 
 
 
-    public TrajectorySequenceRunner(PIDCoeficients lateralPID, PIDCoeficients headingPID, Localizer localizer) {
+    public TrajectorySequenceRunner(PIDCoeficients lateralPID, PIDCoeficients headingPID, Pose2d naturalDecel, double trackWidth, Localizer localizer) {
         this.lateralPID = lateralPID;
         this.headingPID = headingPID;
-        pidController = new PIDController(lateralPID, headingPID);
-        endpointController = new EndpointController(lateralPID, headingPID);
+        pidController = new PIDController(lateralPID, headingPID, trackWidth);
+        endpointController = new EndpointController(lateralPID, headingPID, naturalDecel);
         this.localizer = localizer;
     }
 
@@ -58,7 +58,7 @@ public class TrajectorySequenceRunner {
         switch (followState) {
             case FOLLOW_TRAJECTORY:
                 trajectorySequence.getCurrentTrajectory().updateTargetPoint(localizer.getPoseEstimate());
-                motorPowers = pidController.calculatePowers(localizer.getPoseEstimate(), localizer.getPoseVelocity(), trajectorySequence.getCurrentTrajectory().getTargetPose(), trajectorySequence.getCurrentTrajectory().getTargetMotionState());
+                motorPowers = pidController.calculatePowers(localizer.getPoseEstimate(), localizer.getPoseVelocity(), localizer.getPoseAcceleration(), trajectorySequence.getCurrentTrajectory().getTargetPose(), trajectorySequence.getCurrentTrajectory().getTargetMotionState());
 
                 if (trajectorySequence.getCurrentTrajectory().targetEndpoint()) {
                     targetPose = trajectorySequence.getCurrentTrajectory().endPose();
@@ -68,7 +68,7 @@ public class TrajectorySequenceRunner {
                 break;
             case TARGET_END_POINT:
                 trajectorySequence.getCurrentTrajectory().updateTargetPoint(localizer.getPoseEstimate());
-                motorPowers = endpointController.calculatePowers(localizer.getPoseEstimate(), localizer.getPoseVelocity(), trajectorySequence.getCurrentTrajectory().endPose());
+                motorPowers = endpointController.calculatePowers(localizer.getPoseEstimate(), localizer.getPoseVelocity(), localizer.getPoseAcceleration(), trajectorySequence.getCurrentTrajectory().endPose());
 
                 if (localizer.getPoseEstimate().minus(targetPose).inRange(trajectorySequence.getCurrentTrajectory().getEndError())) {
                     delayTime = Math.max(trajectorySequence.getCurrentTrajectory().getMinTime()-trajectoryTime.seconds(), trajectorySequence.getCurrentTrajectory().getEndDelay());
@@ -76,7 +76,7 @@ public class TrajectorySequenceRunner {
                 }
                 break;
             case NEXT_TRAJECTORY_DELAY:
-                motorPowers = pidController.calculatePowers(localizer.getPoseEstimate(), localizer.getPoseVelocity(), targetPose, new Pose2d(0, 0 ,0));
+                motorPowers = pidController.calculatePowers(localizer.getPoseEstimate(), localizer.getPoseVelocity(), localizer.getPoseAcceleration(), targetPose, new Pose2d(0, 0 ,0));
 
                 if (trajectoryTime.seconds()>delayTime) {
                     trajectorySequence.nextTrajectory();
