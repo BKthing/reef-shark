@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
-public class RawTrajectory {
+public class RawTrajectory implements RawTrajectoryInterface {
     private final List<Pose2d> positions = new ArrayList<>();
 
     private List<IndexCallMarker> callMarkers = new ArrayList<>();
@@ -99,7 +99,7 @@ public class RawTrajectory {
         this.targetEndDistance = targetEndDistance;
     }
 
-    public Trajectory build(ConstraintSet constraints, double resolution) {
+    public TrajectoryInterface build(ConstraintSet constraints, double resolution) {
         if (temporalCallMarkers.size()>0) {
             sortTemporalMarkers();
             minTime = temporalCallMarkers.get(temporalCallMarkers.size()-1).getCallTime();

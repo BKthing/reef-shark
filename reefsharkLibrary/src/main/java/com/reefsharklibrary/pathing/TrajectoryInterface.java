@@ -7,25 +7,25 @@ import java.util.List;
 
 public interface TrajectoryInterface {
 
-    public Pose2d startPose();
+    Pose2d startPose();
 
-    public Pose2d endPose();
+    Pose2d endPose();
 
-    public void updateTargetPoint(Pose2d pose);
+    void updateTargetPoint(Pose2d pose);
 
-    public Pose2d getTargetPose();
+    Pose2d getTargetPose();
 
-    public Pose2d getTargetMotionState();
+    Pose2d getTargetMotionState();
 
-    public boolean targetEndpoint();
+    boolean targetEndpoint();
 
-    public double getEndDelay();
+    double getEndDelay();
 
-    public double getMinTime();
+    double getMinTime();
 
-    public Pose2d getEndError();
+    Pose2d getEndError();
 
-    public List<Pose2d> poseList();
+    List<Pose2d> poseList();
 
-    public List<IndexCallMarker> callMarkerList();
+    List<IndexCallMarker> callMarkerList();
 }

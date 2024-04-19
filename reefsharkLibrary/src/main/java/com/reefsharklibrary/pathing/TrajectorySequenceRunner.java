@@ -88,9 +88,12 @@ public class TrajectorySequenceRunner {
 
                     if (trajectorySequence.isFinished()) {
                         followState = FollowState.NO_TRAJECTORY;
-                    } else {
+                    } if (trajectorySequence.getCurrentTrajectory().getClass() == Trajectory.class) {
                         trajectoryTime.reset();
                         followState = FollowState.FOLLOW_TRAJECTORY;
+                    } else {
+                        trajectoryTime.reset();
+                        followState = FollowState.POINT_TURN;
                     }
                 }
                 break;

@@ -17,7 +17,7 @@ import java.util.List;
 public class TrajectorySequenceBuilder {
     private final double resolution = .2;
 
-    private final List<RawTrajectory> trajectories = new ArrayList<>();
+    private final List<RawTrajectoryInterface> trajectories = new ArrayList<>();
 
 
     private final List<TemporalCallMarker> globalTemporalCallMarkers = new ArrayList<>();
@@ -97,7 +97,7 @@ public class TrajectorySequenceBuilder {
     }
 
     public TrajectorySequenceBuilder addPath(Path pathSegment) {
-        if (pathSegment.isTangent(currentTrajectory().getLastPose())) {
+        if (pathSegment.isTangent(currentTrajectory().getLastPose()) && !(currentTrajectory().getClass() == RawPointTurnTrajectory.class)) {
             currentTrajectory().addTangentSet(pathSegment.generate(resolution), pathSegment.totalDistance());
         } else {
             trajectories.add(new RawTrajectory(currentTrajectory().getTotalDistance()));
@@ -107,11 +107,17 @@ public class TrajectorySequenceBuilder {
         return this;
     }
 
+    public TrajectorySequenceBuilder turn(double turnAmount) {
+        trajectories.add(new RawPointTurnTrajectory(currentTrajectory().getTotalDistance()));
+
+        return this;
+    }
+
     private Pose2d getLastPose() {
         return currentTrajectory().getLastPose();
     }
 
-    private RawTrajectory currentTrajectory() {
+    private RawTrajectoryInterface currentTrajectory() {
         return trajectories.get(trajectories.size()-1);
     }
 
@@ -137,7 +143,7 @@ public class TrajectorySequenceBuilder {
         sortGlobalCallMarkers();
 
         List<TrajectoryInterface> builtTrajectories = new ArrayList<>();
-        for (RawTrajectory currentTrajectory: trajectories) {
+        for (RawTrajectoryInterface currentTrajectory: trajectories) {
             builtTrajectories.add(currentTrajectory.build(constraints, resolution));
         }
 
