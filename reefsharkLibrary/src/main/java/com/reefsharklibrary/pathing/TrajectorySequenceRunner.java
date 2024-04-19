@@ -10,6 +10,7 @@ import com.reefsharklibrary.misc.ElapsedTimer;
 public class TrajectorySequenceRunner {
     enum FollowState {
         FOLLOW_TRAJECTORY,
+        POINT_TURN,
         TARGET_END_POINT,
         NEXT_TRAJECTORY_DELAY,
         NO_TRAJECTORY
@@ -65,6 +66,10 @@ public class TrajectorySequenceRunner {
                     followState = FollowState.TARGET_END_POINT;
                 }
 
+                break;
+            case POINT_TURN:
+                //tbd
+                //might use index marker to trigger
                 break;
             case TARGET_END_POINT:
                 trajectorySequence.getCurrentTrajectory().updateTargetPoint(localizer.getPoseEstimate());

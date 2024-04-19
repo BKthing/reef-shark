@@ -136,7 +136,7 @@ public class TrajectorySequenceBuilder {
     public TrajectorySequence build() {
         sortGlobalCallMarkers();
 
-        List<Trajectory> builtTrajectories = new ArrayList<>();
+        List<TrajectoryInterface> builtTrajectories = new ArrayList<>();
         for (RawTrajectory currentTrajectory: trajectories) {
             builtTrajectories.add(currentTrajectory.build(constraints, resolution));
         }

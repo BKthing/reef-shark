@@ -7,20 +7,20 @@ import java.util.List;
 
 public class TrajectorySequence {
     private boolean isFinished = false;
-    private final List<Trajectory> trajectories;
+    private final List<TrajectoryInterface> trajectories;
 
     private int currentTrajectoryIndex = 0;
 
     private final List<TemporalCallMarker> globalTemporalMarkers;
 
-    TrajectorySequence(List<Trajectory> trajectories, List<TemporalCallMarker> temporalCallMarkers) {
+    TrajectorySequence(List<TrajectoryInterface> trajectories, List<TemporalCallMarker> temporalCallMarkers) {
         if (trajectories.size() == 0) throw new NullTrajectoryExeption();
 
         this.trajectories = trajectories;
         globalTemporalMarkers = temporalCallMarkers;
     }
 
-    public Trajectory getCurrentTrajectory() {
+    public TrajectoryInterface getCurrentTrajectory() {
         return trajectories.get(currentTrajectoryIndex);
     }
 

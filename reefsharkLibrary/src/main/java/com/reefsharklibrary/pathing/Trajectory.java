@@ -6,7 +6,7 @@ import com.reefsharklibrary.pathing.data.TemporalCallMarker;
 
 import java.util.List;
 
-public class Trajectory {
+public class Trajectory implements TrajectoryInterface {
 
     private final List<Pose2d> positions;
     private final List<Pose2d> motionStates;
@@ -47,20 +47,23 @@ public class Trajectory {
         this.targetEndPositionThreshold = targetEndPositionThreshold;
     }
 
+    @Override
     public Pose2d startPose() {
         return positions.get(0);
     }
 
+    @Override
     public Pose2d endPose() {
         return positions.get(positions.size()-1);
     }
 
+    @Override
     public void updateTargetPoint(Pose2d pose) {
         advanceForward(pose, pose.minus(positions.get(currentPoseIndex)).compareVal());
         advanceBack(pose, pose.minus(positions.get(currentPoseIndex)).compareVal());
     }
 
-    public void advanceForward(Pose2d pose, double prevCompareVal) {
+    private void advanceForward(Pose2d pose, double prevCompareVal) {
         if (currentPoseIndex < positions.size()-1) {
             double currentCompareVal = pose.minus(positions.get(currentPoseIndex + 1)).compareVal();
             if (currentCompareVal > prevCompareVal) {
@@ -70,7 +73,7 @@ public class Trajectory {
         }
     }
 
-    public void advanceBack(Pose2d pose, double prevCompareVal) {
+    private void advanceBack(Pose2d pose, double prevCompareVal) {
         if (currentPoseIndex != 0) {
             double currentCompareVal = pose.minus(positions.get(currentPoseIndex - 1)).compareVal();
             if (currentCompareVal > prevCompareVal) {
@@ -80,34 +83,42 @@ public class Trajectory {
         }
     }
 
+    @Override
     public Pose2d getTargetPose() {
         return positions.get(currentPoseIndex);
     }
 
+    @Override
     public Pose2d getTargetMotionState() {
         return  motionStates.get(currentPoseIndex);
     }
 
+    @Override
     public boolean targetEndpoint() {
         return targetEndPositionThreshold>=currentPoseIndex;
     }
 
+    @Override
     public double getEndDelay() {
         return endDelay;
     }
 
+    @Override
     public double getMinTime() {
         return minTime;
     }
 
+    @Override
     public Pose2d getEndError() {
         return endError;
     }
 
+    @Override
     public List<Pose2d> poseList() {
         return positions;
     }
 
+    @Override
     public List<IndexCallMarker> callMarkerList() {
         return callMarkers;
     }

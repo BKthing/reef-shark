@@ -46,6 +46,14 @@ public class Pose2d {
         return new Pose2d(vector2d.plus(pose.getVector2d()), heading+pose.heading);
     }
 
+    public Pose2d divide(Pose2d pose) {
+        return new Pose2d(vector2d.divide(pose.getVector2d()), heading/pose.heading);
+    }
+
+    public Pose2d multiply(Pose2d pose) {
+        return new Pose2d(vector2d.multiply(pose.getVector2d()), heading*pose.heading);
+    }
+
     public Pose2d sqr() {
         return vector2d.sqr().toPose(heading*heading);
     }
