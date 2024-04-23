@@ -107,9 +107,12 @@ public class TrajectorySequenceBuilder {
         return this;
     }
 
+    public TrajectorySequenceBuilder turnTo(double heading) {
+        return turn(heading);
+    }
+
     public TrajectorySequenceBuilder turn(double turnAmount) {
         trajectories.add(new RawPointTurnTrajectory(currentTrajectory().getTotalDistance()));
-
         return this;
     }
 

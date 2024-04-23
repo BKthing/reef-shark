@@ -33,16 +33,20 @@ public class RawTrajectory implements RawTrajectoryInterface {
 
     RawTrajectory(double initialDistance) {
         this.initialDistance = initialDistance;
+
     }
 
+    @Override
     public double getAccumulatedDistance() {
         return pathDistance;
     }
 
+    @Override
     public double getTotalDistance() {
         return initialDistance+pathDistance;
     }
 
+    @Override
     public Pose2d getLastPose() {
         return positions.get(positions.size()-1);
     }
@@ -180,7 +184,7 @@ public class RawTrajectory implements RawTrajectoryInterface {
         Vector2d adjustedAccel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearAccel(), heading);
         Vector2d adjustedVel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearVel(), heading);
 
-        Pose2d unScaledVelocities = new Pose2d();
+//        Pose2d unScaledVelocities = new Pose2d();
 
 
         return new Pose2d(0, 0, 0);
