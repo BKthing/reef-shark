@@ -1,65 +1,58 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
 plugins {
-//    id 'com.android.library'
     id 'maven-publish'
-    id 'java'
+//    id 'java'
+    id 'java-library'
 }
 
-//android {
-//    namespace 'com.reefsharklibrary'
-//    compileSdk 34
-//
-//    defaultConfig {
-//        minSdk 24
-//
-//        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-//        consumerProguardFiles "consumer-rules.pro"
-//    }
-//
-//    buildTypes {
-//        release {
-//            minifyEnabled false
-//            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-//        }
-//    }
-//    compileOptions {
-//        sourceCompatibility JavaVersion.VERSION_1_8
-//        targetCompatibility JavaVersion.VERSION_1_8
-//    }
-//}
+repositories {
+    mavenCentral()
+}
+
+java {
+    withSourcesJar()
+}
+
+//group = ""
+//version = "0.0.1-alpha"
 
 publishing {
-    repositories {
-        maven {
-            name "GithubPackages"
-            url uri("https://maven.pkg.github.com/bkthing/reef-shark")
-            credentials{
-                username = System.getenv("GITHUB_USER")
-                password = System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
-
     publications {
-        maven (MavenPublication){
-            groupId "com.reefsharklibrary"
+        reefsharkLibrary(MavenPublication) {
+//            pom {
+//                name = "reef-shark"
+//                description = "A simple path follower for FTC."
+//                url = "https://maven.pkg.github.com/bkthing/reef-shark"
+//            }
+
+            groupId "com.BKthing.reefshark"
             artifactId "reefsharkLibrary"
             version "0.0.1-alpha"
-//            artifact("$buildDir/outputs/aar/reefsharkLibrary-release.aar")
+
             from components.java
         }
-    }   
+
+    }
+
+    dependencies {
+        implementation 'org.apache.commons:commons-math3:3.6.1'
+    }
+
+//    repositories {
+//        maven {
+//            name "GithubPackages"
+//            url uri("https://maven.pkg.github.com/bkthing/reef-shark")
+//            credentials{
+//                username = System.getenv("GITHUB_USER")
+//                password = System.getenv("GITHUB_TOKEN")
+//            }
+//        }
+//    }
 
 }
 
-dependencies {
-
-//    implementation 'androidx.appcompat:appcompat:1.6.1'
-//    implementation 'com.google.android.material:material:1.11.0'
-//    testImplementation 'junit:junit:4.13.2'
-//    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-//    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-}
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-}
+//java {
+//    sourceCompatibility = JavaVersion.VERSION_1_8
+//    targetCompatibility = JavaVersion.VERSION_1_8
+//}
