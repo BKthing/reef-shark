@@ -14,6 +14,4 @@ public interface Localizer {
     Pose2d getPoseVelocity();
     Pose2d getPoseAcceleration();
 
-    Vector2d getCentrifugalForce();
-
 }

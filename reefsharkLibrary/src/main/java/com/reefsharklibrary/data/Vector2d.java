@@ -1,5 +1,7 @@
 package com.reefsharklibrary.data;
 
+import java.util.Vector;
+
 public class Vector2d {
     private final double x;
     private final double y;
@@ -63,6 +65,10 @@ public class Vector2d {
 
     public Vector2d sqrt() {
         return new Vector2d(Math.sqrt(x), Math.sqrt(y));
+    }
+
+    public Vector2d rotate(double radians) {
+        return new Vector2d(x*Math.cos(radians)-y*Math.sin(radians), x*Math.sin(radians)+y*Math.cos(radians));
     }
 
     //used to determine how close the robot is to a point
