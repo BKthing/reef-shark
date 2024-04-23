@@ -27,7 +27,6 @@ class TwoWheelLocalizer implements Localizer {
 
     double[] prevWheelPositions;
     double prevHeading;
-    int[] wheelPorts;
 
     // External interfaces
     public Pose2d relativeRobotMovement = new Pose2d(0, 0, 0);
@@ -87,6 +86,8 @@ class TwoWheelLocalizer implements Localizer {
         prevWheelPositions[0] = parallel;
         prevWheelPositions[1] = perpendicular;
         prevHeading = heading;
+
+        updateFromRelative(deltas);
     }
 
     public void updateFromRelative(double[] deltas) {
@@ -149,7 +150,6 @@ class TwoWheelLocalizer implements Localizer {
     @Override
     public void setPoseEstimate(Pose2d pose) {
         poseEstimate = pose;
-
     }
 
     private void updatePoseVelocitiy() {
