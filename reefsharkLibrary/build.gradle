@@ -4,19 +4,6 @@ plugins {
     id 'java-library'
 }
 
-repositories {
-    mavenCentral()
-
-    maven {
-        name "GithubPackages"
-        url uri("https://maven.pkg.github.com/bkthing/reef-shark")
-        credentials{
-            username = System.getenv("GITHUB_USER")
-            password = System.getenv("GITHUB_TOKEN")
-        }
-    }
-}
-
 java {
     withSourcesJar()
 }
@@ -30,13 +17,31 @@ publishing {
                 url = "https://maven.pkg.github.com/bkthing/reef-shark"
             }
 
-            groupId "com.BKthing.reefshark"
+            groupId "com.github.BKthing.reefshark"
             artifactId "reefsharkLibrary"
-            version "0.0.1-alpha"
+
+//            artifact packageJavadoc
+//            artifact sourcesJar
+
+            version "0.0.2b-alpha"
 
             from components.java
         }
 
+    }
+
+    repositories {
+        mavenCentral()
+
+        maven {
+            name "GithubPackages"
+            url uri("https://maven.pkg.github.com/bkthing/reef-shark")
+//            url = layout.buildDirectory.dir('repo')
+            credentials{
+                username = System.getenv("GITHUB_USER")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 
     dependencies {
@@ -44,3 +49,19 @@ publishing {
     }
 
 }
+
+//javadoc {
+//    source = sourceSets.main.allJava
+//    classpath = configurations.compileClasspath
+//    options.setMemberLevel JavadocMemberLevel.PUBLIC
+//}
+//
+//task sourcesJar(type: Jar) {
+//    archiveClassifier.set("sources")
+//    from sourceSets.main.allJava
+//}
+//
+//task packageJavadoc(type: Jar) {
+//    archiveClassifier.set("javadoc")
+//    from javadoc
+//}

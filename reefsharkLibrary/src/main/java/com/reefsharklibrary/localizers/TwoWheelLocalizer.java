@@ -15,13 +15,10 @@ import org.apache.commons.math3.linear.RealMatrix;
 import java.util.LinkedList;
 import java.util.function.DoubleSupplier;
 
-class TwoWheelLocalizer implements Localizer {
-    public DoubleSupplier parallelWheel;
-    public DoubleSupplier perpendicularWheel;
-    public DoubleSupplier imuAngle;
+public class TwoWheelLocalizer implements Localizer {
 
-    public double perpendicularX;
-    public double parallelY;
+    public final double perpendicularX;
+    public final double parallelY;
 
     DecompositionSolver forwardSolver;
 
@@ -40,11 +37,9 @@ class TwoWheelLocalizer implements Localizer {
     /*
     * Thanks to https://github.com/mrjmac/7161-powerplay/blob/main/TeamCode/src/main/java/OceanCrashPurePursuit/autonomous/odometry/TwoWheelTrackingLocalizer.java#L44 for the localizer code
     * */
-    TwoWheelLocalizer(double perpendicularX, double parallelY, DoubleSupplier parallelWheel, DoubleSupplier perpendicularWheel, DoubleSupplier imuAngle) {
+    public TwoWheelLocalizer(double perpendicularX, double parallelY) {
         this.perpendicularX = perpendicularX;
         this.parallelY = parallelY;
-        this.parallelWheel = parallelWheel;
-        this.perpendicularWheel = perpendicularWheel;
 
         Array2DRowRealMatrix inverseMatrix = new Array2DRowRealMatrix(3, 3);
 
@@ -73,10 +68,11 @@ class TwoWheelLocalizer implements Localizer {
 
     @Override
     public void update() {
-        double parallel = parallelWheel.getAsDouble();
-        double perpendicular = perpendicularWheel.getAsDouble();
-        double heading = imuAngle.getAsDouble();
+        update(0, 0, 0);
+    }
 
+
+    public void update(double parallel, double perpendicular, double heading) {
         double[] deltas = new double[] {
                 parallel-prevWheelPositions[0],
                 perpendicular-prevWheelPositions[1],
