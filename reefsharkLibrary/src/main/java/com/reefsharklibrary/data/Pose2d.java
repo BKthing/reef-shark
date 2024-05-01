@@ -70,4 +70,8 @@ public class Pose2d {
     public  boolean inRange(Pose2d pose) {
         return Math.abs(heading) < pose.heading && vector2d.isInRange(pose.getVector2d());
     }
+
+    public String toString() {
+        return vector2d.toString() + String.format(" heading: %,3.2f", heading*180/Math.PI);
+    }
 }

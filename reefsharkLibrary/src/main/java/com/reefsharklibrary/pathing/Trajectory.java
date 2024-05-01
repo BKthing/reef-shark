@@ -78,7 +78,7 @@ public class Trajectory implements TrajectoryInterface {
             double currentCompareVal = pose.minus(positions.get(currentPoseIndex - 1)).compareVal();
             if (currentCompareVal > prevCompareVal) {
                 currentPoseIndex--;
-                advanceForward(pose, currentCompareVal);
+                advanceBack(pose, currentCompareVal);
             }
         }
     }

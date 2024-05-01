@@ -13,6 +13,7 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.function.DoubleSupplier;
 
 public class TwoWheelLocalizer implements Localizer {
@@ -84,6 +85,7 @@ public class TwoWheelLocalizer implements Localizer {
         prevHeading = heading;
 
         updateFromRelative(deltas);
+        updatePoseVelocitiy();
     }
 
     public void updateFromRelative(double[] deltas) {
@@ -99,7 +101,7 @@ public class TwoWheelLocalizer implements Localizer {
 
         relativeRobotMovement = relativeRobotMovement.plus(robotPoseDelta);
         poseEstimate = relativeOdometryUpdate(poseEstimate, robotPoseDelta);
-        prevPositions.add(new TimePose2d(relativeRobotMovement));
+        prevPositions.add(new TimePose2d(poseEstimate));
     }
 
     private static Pose2d relativeOdometryUpdate(Pose2d fieldPose, Pose2d robotPoseDelta) {
@@ -139,13 +141,14 @@ public class TwoWheelLocalizer implements Localizer {
     }
 
     @Override
-    public Pose2d getLastPoseEstimate() {
-        return null;
+    public List<TimePose2d> getPoseHistory() {
+        return prevPositions;
     }
 
     @Override
     public void setPoseEstimate(Pose2d pose) {
         poseEstimate = pose;
+        prevPositions.clear();
     }
 
     private void updatePoseVelocitiy() {
@@ -180,7 +183,7 @@ public class TwoWheelLocalizer implements Localizer {
         int oldIndex = Math.max(0, prevVelocities.size()-5);
 
         TimePose2d old = prevVelocities.get(oldIndex);
-        TimePose2d cur = prevVelocities.get(prevPositions.size()-1);
+        TimePose2d cur = prevVelocities.get(prevVelocities.size()-1);
 
         return cur.minus(old).scale((double) 1000/(cur.time-old.time));
     }

@@ -16,7 +16,7 @@ public class Line implements Geometry {
     public Line(Vector2d startPoint, Vector2d endPoint) {
         this.startPoint = startPoint;
         this.endPoint = endPoint;
-        difference = new Vector2d(startPoint.getX()-endPoint.getX(), startPoint.getY()-endPoint.getY());
+        difference = endPoint.minus(startPoint);
         distance = difference.getMagnitude();
         angle = difference.getDirection();
         x = (Double d) -> d*Math.cos(angle)+ startPoint.getX();

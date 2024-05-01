@@ -3,28 +3,20 @@ package com.reefsharklibrary.robotControl;
 public class ReusableHardwareAction {
     private final HardwareQueue hardwareQueue;
 
-    private volatile HardwareAction currentAction = () -> {};
+    private volatile boolean queued = false;
 
-    private boolean queued = false;
+    private volatile HardwareAction currentAction = () -> queued = false;
 
     public ReusableHardwareAction(HardwareQueue hardwareQueue) {
         this.hardwareQueue = new HardwareQueue();
     }
 
-    public void setAction(HardwareAction hardwareAction) {
-        currentAction = hardwareAction;
-
-        //if it is currently not in a queue
-        if (!queued) {
-            queued = true;
-            hardwareQueue.add(() -> {
-                currentAction.run();
-                queued = false;
-            });
-        }
+    public void setAndQueueAction(HardwareAction hardwareAction) {
+        setAction(hardwareAction);
+        queueAction();
     }
 
-    public void setIfEmpty(HardwareAction hardwareAction) {
+    public void setAndQueueIfEmpty(HardwareAction hardwareAction) {
         if (!queued) {
             queued = true;
             currentAction = hardwareAction;
@@ -35,6 +27,21 @@ public class ReusableHardwareAction {
         }
     }
 
+    //queues the last set action
+    public void queueAction() {
+        //if it is currently not in a queue
+        if (!queued) {
+            queued = true;
+            hardwareQueue.add(() -> {
+                currentAction.run();
+                queued = false;
+            });
+        }
+    }
+
+    public void setAction(HardwareAction hardwareAction) {
+        currentAction = hardwareAction;
+    }
 
 
 

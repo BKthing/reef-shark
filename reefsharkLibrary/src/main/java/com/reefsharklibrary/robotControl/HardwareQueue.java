@@ -17,6 +17,21 @@ public class HardwareQueue {
         timer = new ElapsedTimer();
     }
 
+    public boolean updateSingle() {
+        if (!hardwareActions.isEmpty()) {
+            hardwareActions.remove().run();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void updateAll() {
+        for (HardwareAction action: hardwareActions) {
+            hardwareActions.remove().run();
+        }
+    }
+
     public void update(double runTime) {
         timer.reset();
 
@@ -25,10 +40,25 @@ public class HardwareQueue {
         }
     }
 
-    public void update(int runTime) {
-        while (!hardwareActions.isEmpty() && runTime>0) {
+    public void update(int runActions) {
+        while (!hardwareActions.isEmpty() && runActions>0) {
             hardwareActions.remove().run();
-            runTime--;
+            runActions--;
+        }
+    }
+
+    public void update(double runTime, int maxQueueSize) {
+        timer.reset();
+
+        while (!hardwareActions.isEmpty() && timer.milliSeconds()<runTime || hardwareActions.size()>maxQueueSize) {
+            hardwareActions.remove().run();
+        }
+    }
+
+    public void update(int runActions, int maxQueueSize) {
+        while (!hardwareActions.isEmpty() && runActions>0 || hardwareActions.size()>maxQueueSize) {
+            hardwareActions.remove().run();
+            runActions--;
         }
     }
 

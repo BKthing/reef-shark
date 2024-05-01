@@ -42,6 +42,11 @@ public class RawPointTurnTrajectory implements RawTrajectoryInterface {
     }
 
     @Override
+    public List<Pose2d> getPoseList() {
+        return positions;
+    }
+
+    @Override
     public void addPose(Pose2d position, double distance) {
         this.positions.add(position);
     }

@@ -51,6 +51,11 @@ public class RawTrajectory implements RawTrajectoryInterface {
         return positions.get(positions.size()-1);
     }
 
+    @Override
+    public List<Pose2d> getPoseList() {
+        return positions;
+    }
+
     public void addPose(Pose2d position, double distance) {
         this.positions.add(position);
         pathDistance += distance;
@@ -159,17 +164,17 @@ public class RawTrajectory implements RawTrajectoryInterface {
         prevVelocities = new Pose2d(0, 0, 0);
         velocities.add(velocities.size()-1, prevVelocities);
 
-        while (decelerating) {
-            prevVelocities = findDecelVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, constraints);
-
-            //i<2 prevents it from calling a negative index on the next loop, should never be true on a normal trajectory
-            if (poseLessThan(prevVelocities, velocities.get(i)) || i<2) {
-                decelerating = false;
-            } else {
-                velocities.add(i, prevVelocities);
-                i--;
-            }
-        }
+//        while (decelerating) {
+//            prevVelocities = findDecelVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, constraints);
+//
+//            //i<2 prevents it from calling a negative index on the next loop, should never be true on a normal trajectory
+//            if (poseLessThan(prevVelocities, velocities.get(i)) || i<2) {
+//                decelerating = false;
+//            } else {
+//                velocities.add(i, prevVelocities);
+//                i--;
+//            }
+//        }
 
         return velocities;
     }

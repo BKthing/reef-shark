@@ -46,6 +46,6 @@ public class ConstantHeading implements Path {
 
     @Override
     public boolean isTangent(Pose2d lastPose) {
-        return endPose() == lastPose;
+        return startPose().getHeading() == lastPose.getHeading();
     }
 }

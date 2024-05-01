@@ -97,7 +97,7 @@ public class TrajectorySequenceBuilder {
     }
 
     public TrajectorySequenceBuilder addPath(Path pathSegment) {
-        if (pathSegment.isTangent(currentTrajectory().getLastPose()) && !(currentTrajectory().getClass() == RawPointTurnTrajectory.class)) {
+        if (pathSegment.isTangent(currentTrajectory().getLastPose())) {
             currentTrajectory().addTangentSet(pathSegment.generate(resolution), pathSegment.totalDistance());
         } else {
             trajectories.add(new RawTrajectory(currentTrajectory().getTotalDistance()));
@@ -120,7 +120,7 @@ public class TrajectorySequenceBuilder {
         return currentTrajectory().getLastPose();
     }
 
-    private RawTrajectoryInterface currentTrajectory() {
+    public RawTrajectoryInterface currentTrajectory() {
         return trajectories.get(trajectories.size()-1);
     }
 

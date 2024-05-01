@@ -13,7 +13,7 @@ public class TrajectorySequence {
 
     private final List<TemporalCallMarker> globalTemporalMarkers;
 
-    TrajectorySequence(List<TrajectoryInterface> trajectories, List<TemporalCallMarker> temporalCallMarkers) {
+    public TrajectorySequence(List<TrajectoryInterface> trajectories, List<TemporalCallMarker> temporalCallMarkers) {
         if (trajectories.size() == 0) throw new NullTrajectoryExeption();
 
         this.trajectories = trajectories;

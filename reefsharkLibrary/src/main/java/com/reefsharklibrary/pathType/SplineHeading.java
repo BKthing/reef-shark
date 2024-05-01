@@ -53,6 +53,6 @@ public class SplineHeading implements Path {
 
     @Override
     public boolean isTangent(Pose2d lastPose) {
-        return endPose() == lastPose;
+        return startPose().getHeading() == lastPose.getHeading();
     }
 }

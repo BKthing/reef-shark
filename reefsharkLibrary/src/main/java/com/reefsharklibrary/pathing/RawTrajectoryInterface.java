@@ -14,6 +14,8 @@ public interface RawTrajectoryInterface {
 
     Pose2d getLastPose();
 
+    List<Pose2d> getPoseList();
+
     void addPose(Pose2d position, double distance);
 
     void addSet(List<Pose2d> points, double totalDistance);

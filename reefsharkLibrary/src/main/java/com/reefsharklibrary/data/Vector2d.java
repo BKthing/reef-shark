@@ -79,4 +79,8 @@ public class Vector2d {
     public boolean isInRange(Vector2d vector) {
         return Math.abs(x)<vector.x && Math.abs(y) < vector.y;
     }
+
+    public String toString() {
+        return String.format("x: %,3.2f y: %,3.2f", x, y);
+    }
 }
