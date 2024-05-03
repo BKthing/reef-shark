@@ -184,15 +184,103 @@ public class RawTrajectory implements RawTrajectoryInterface {
     }
 
     private Pose2d findVelocities(Pose2d difference, Pose2d prevVelocities, double heading, ConstraintSet constraints) {
-        double distance = difference.getVector2d().getMagnitude();
-        double driveBaseDirection = difference.getVector2d().getDirection();
-        Vector2d adjustedAccel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearAccel(), heading);
-        Vector2d adjustedVel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearVel(), heading);
+        //
+        double offsetAngle = difference.getVector2d().getDirection();
+        double rotatedHeading = (heading-difference.getHeading()/2)-offsetAngle;
 
-//        Pose2d unScaledVelocities = new Pose2d();
+        Vector2d rotatedCurVel = prevVelocities.getVector2d().rotate(-offsetAngle);
+
+        //a list containing the vertices of a rhombus describing the velocities that the robot can achieve at a given angle
+        //the x-axis the direction the robot needs to travel and we want to find the largest number on the x-axis that is inside the rhombus
+        List<Vector2d> velocityBounds = new ArrayList<>();
+
+        velocityBounds.add(new Vector2d(constraints.getMaxVel().getX(), 0).rotate(-rotatedHeading).plus(rotatedCurVel));
+        velocityBounds.add(new Vector2d(0, constraints.getMaxVel().getY()).rotate(-rotatedHeading).plus(rotatedCurVel));
+        velocityBounds.add(new Vector2d(-constraints.getMaxVel().getX(), 0).rotate(-rotatedHeading).plus(rotatedCurVel));
+        velocityBounds.add(new Vector2d(0, -constraints.getMaxVel().getY()).rotate(-rotatedHeading).plus(rotatedCurVel));
+
+        //
+        List<Integer> above = new ArrayList<>();
+        List<Integer> below = new ArrayList<>();
+        List<Integer> on = new ArrayList<>();
+
+        for (int i = 0; i<4; i++) {
+            if (velocityBounds.get(i).getY()>0) {
+                above.add(i);
+            } else if (velocityBounds.get(i).getY()<0) {
+                below.add(i);
+            } else {
+                on.add(i);
+            }
+        }
+
+        double furthestX;
+
+        if (on.size() != 0) {
+            if (on.size() == 1) {
+                furthestX = velocityBounds.get(on.get(0)).getX();
+            } else {
+                furthestX = Math.max(velocityBounds.get(on.get(0)).getX(), velocityBounds.get(on.get(1)).getX());
+            }
+        } else if (above.size() == 0 || below.size() == 0) {
+            //find the point closest to the x axis
+        } else if (above.size() == 1) {
+            furthestX = intersectingLinesXIntercept(
+                    velocityBounds.get(above.get(0)),
+                    velocityBounds.get(bounds(above.get(0)-1)),
+                    velocityBounds.get(bounds(above.get(0)+1))
+                    );
+        } else if (below.size() == 1) {
+            furthestX = intersectingLinesXIntercept(
+                    velocityBounds.get(below.get(0)),
+                    velocityBounds.get(bounds(below.get(0)-1)),
+                    velocityBounds.get(bounds(below.get(0)+1))
+            );
+        }
+        //if it gets to here we know that their must be 2 parallel lines
+        else if (above.get(0) + above.get(1) == 1 || below.get(0) + below.get(1) == 1) {
+            furthestX = parallelLinesXIntercept(
+                    velocityBounds.get(0),
+                    velocityBounds.get(3),
+                    velocityBounds.get(1),
+                    velocityBounds.get(2)
+            );
+        } else {
+            furthestX = parallelLinesXIntercept(
+                    velocityBounds.get(0),
+                    velocityBounds.get(1),
+                    velocityBounds.get(2),
+                    velocityBounds.get(3)
+            );
+        }
+
+
+
+
 
 
         return new Pose2d(0, 0, 0);
+    }
+
+    private double intersectingLinesXIntercept(Vector2d sharedPoint, Vector2d pointA, Vector2d pointB) {
+        return parallelLinesXIntercept(sharedPoint, pointA, sharedPoint, pointB);
+    }
+
+    private double parallelLinesXIntercept(Vector2d line1a, Vector2d line1b, Vector2d line2a, Vector2d line2b) {
+        return Math.max(lineXIntercept(line1a, line1b), lineXIntercept(line2a, line2b));
+    }
+
+    private double lineXIntercept(Vector2d lineA, Vector2d lineB) {
+
+    }
+
+    private int bounds(int bound) {
+        if (bound<0) {
+            bound += 4;
+        } else if (bound>3) {
+            bound -= 4;
+        }
+        return bound;
     }
 
     private Pose2d findDecelVelocities(Pose2d difference, Pose2d prevVelocities, ConstraintSet constraints) {

@@ -12,5 +12,7 @@ public interface Path {
 
     double totalDistance();
 
-    boolean isTangent(Pose2d lastPose);
+    double getTangentAngle();
+
+    boolean isTangent(double lastTangentAngle);
 }

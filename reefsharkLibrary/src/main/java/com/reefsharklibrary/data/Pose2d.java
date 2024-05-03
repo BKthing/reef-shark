@@ -62,11 +62,6 @@ public class Pose2d {
         return vector2d.sqrt().toPose(Math.sqrt(heading));
     }
 
-    //used to determine how close the robot is to a point
-    public double compareVal() {
-        return vector2d.compareVal()+Math.abs(heading*5);
-    }
-
     public  boolean inRange(Pose2d pose) {
         return Math.abs(heading) < pose.heading && vector2d.isInRange(pose.getVector2d());
     }

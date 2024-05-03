@@ -22,11 +22,12 @@ public class SplineHeading implements Path {
     public List<Pose2d> generate(double resolution) {
         List<Pose2d> path = new ArrayList<>();
 
-        double heading = startHeading;
-        double headingInterval = (endHeading-startHeading)*resolution/geometry.getTotalDistance();
+        double heading = startHeading-geometry.tangentAngle(0);
+        double headingInterval = (endHeading-startHeading+geometry.tangentAngle(0)-geometry.tangentAngle(geometry.getTotalDistance()))*resolution/geometry.getTotalDistance();
+//(endHeading-geometry.tangentAngle(geometry.getTotalDistance()))-(startHeading-geometry.tangentAngle(0))
 
         for (double i = 0; i < geometry.getTotalDistance()-resolution; i += resolution) {
-            path.add(geometry.getPoint(i).toPose(geometry.tangentAngle(i)));
+            path.add(geometry.getPoint(i).toPose(geometry.tangentAngle(i)+heading));
 
             heading += headingInterval;
         }
@@ -52,7 +53,13 @@ public class SplineHeading implements Path {
     }
 
     @Override
-    public boolean isTangent(Pose2d lastPose) {
-        return startPose().getHeading() == lastPose.getHeading();
+    public double getTangentAngle() {
+        return geometry.tangentAngle(geometry.getTotalDistance());
+    }
+
+    @Override
+    public boolean isTangent(double lastTangentAngle) {
+        //returns true if angles are within 1 degree of eachother
+        return Math.abs(geometry.tangentAngle(0)-lastTangentAngle)<Math.toRadians(1);
     }
 }

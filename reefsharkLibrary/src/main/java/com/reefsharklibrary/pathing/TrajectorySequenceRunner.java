@@ -98,20 +98,16 @@ public class TrajectorySequenceRunner {
                 break;
         }
 
-        if (followState != FollowState.NO_TRAJECTORY) {
-            telemetry(trajectorySequence.getCurrentTrajectory().getTargetPose(), trajectorySequence.getCurrentTrajectory().poseList());
-        }
-
         lastMotorPowers = motorPowers;
         return motorPowers;
     }
 
-    public FollowState getFollowState() {
-        return followState;
+    public TrajectorySequence getTrajectorySequence() {
+        return trajectorySequence;
     }
 
-    public void telemetry(Pose2d targetPose, List<Pose2d> poseList) {
-
+    public FollowState getFollowState() {
+        return followState;
     }
 
 }

@@ -73,7 +73,7 @@ public class Vector2d {
 
     //used to determine how close the robot is to a point
     public double compareVal() {
-        return Math.abs(x)+Math.abs(y);
+        return getMagnitude();
     }
 
     public boolean isInRange(Vector2d vector) {

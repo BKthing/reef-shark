@@ -27,6 +27,11 @@ public class PointTurnTrajectory implements TrajectoryInterface {
     }
 
     @Override
+    public int getTargetPoseIndex() {
+        return 0;
+    }
+
+    @Override
     public Pose2d getTargetMotionState() {
         return null;
     }

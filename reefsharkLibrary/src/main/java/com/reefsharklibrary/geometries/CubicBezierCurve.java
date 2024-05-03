@@ -26,7 +26,7 @@ public class CubicBezierCurve implements Geometry {
         double scaleFactor = p4.minus(p1).getMagnitude()/2;
 
         Vector2d p2 = new Vector2d(p1.getX()+scaleFactor*Math.cos(startPose.getHeading()), p1.getY()+scaleFactor*Math.sin(startPose.getHeading()));
-        Vector2d p3 = new Vector2d(p4.getX()-scaleFactor*Math.cos(startPose.getHeading()), p4.getY()-scaleFactor*Math.sin(startPose.getHeading()));
+        Vector2d p3 = new Vector2d(p4.getX()-scaleFactor*Math.cos(endPose.getHeading()), p4.getY()-scaleFactor*Math.sin(endPose.getHeading()));
 
 
         startPoint = p1;
@@ -46,7 +46,7 @@ public class CubicBezierCurve implements Geometry {
         dx = (Double t) -> - 3*Math.pow(t-1, 2)*p1.getX() - 3*(1-t)*(3*t-1)*p2.getX() + 3*(2-3*t)*t*p3.getX() + 3*Math.pow(t, 2)* p4.getX();
         dy = (Double t) -> - 3*Math.pow(t-1, 2)*p1.getY() - 3*(1-t)*(3*t-1)*p2.getY() + 3*(2-3*t)*t*p3.getY() + 3*Math.pow(t, 2)* p4.getY();
 
-        points = generate(.01);
+        points = generate(.001);
     }
 
     public CubicBezierCurve(Vector2d p1, Vector2d p2, Vector2d p3, Vector2d p4) {

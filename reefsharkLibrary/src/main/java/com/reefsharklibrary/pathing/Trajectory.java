@@ -59,14 +59,14 @@ public class Trajectory implements TrajectoryInterface {
 
     @Override
     public void updateTargetPoint(Pose2d pose) {
-        advanceForward(pose, pose.minus(positions.get(currentPoseIndex)).compareVal());
-        advanceBack(pose, pose.minus(positions.get(currentPoseIndex)).compareVal());
+        advanceForward(pose, pose.getVector2d().minus(positions.get(currentPoseIndex).getVector2d()).compareVal());
+        advanceBack(pose, pose.getVector2d().minus(positions.get(currentPoseIndex).getVector2d()).compareVal());
     }
 
     private void advanceForward(Pose2d pose, double prevCompareVal) {
         if (currentPoseIndex < positions.size()-1) {
-            double currentCompareVal = pose.minus(positions.get(currentPoseIndex + 1)).compareVal();
-            if (currentCompareVal > prevCompareVal) {
+            double currentCompareVal = pose.getVector2d().minus(positions.get(currentPoseIndex+1).getVector2d()).compareVal();
+            if (currentCompareVal < prevCompareVal) {
                 currentPoseIndex++;
                 advanceForward(pose, currentCompareVal);
             }
@@ -75,8 +75,8 @@ public class Trajectory implements TrajectoryInterface {
 
     private void advanceBack(Pose2d pose, double prevCompareVal) {
         if (currentPoseIndex != 0) {
-            double currentCompareVal = pose.minus(positions.get(currentPoseIndex - 1)).compareVal();
-            if (currentCompareVal > prevCompareVal) {
+            double currentCompareVal = pose.getVector2d().minus(positions.get(currentPoseIndex-1).getVector2d()).compareVal();
+            if (currentCompareVal < prevCompareVal) {
                 currentPoseIndex--;
                 advanceBack(pose, currentCompareVal);
             }
@@ -86,6 +86,11 @@ public class Trajectory implements TrajectoryInterface {
     @Override
     public Pose2d getTargetPose() {
         return positions.get(currentPoseIndex);
+    }
+
+    @Override
+    public int getTargetPoseIndex() {
+        return currentPoseIndex;
     }
 
     @Override

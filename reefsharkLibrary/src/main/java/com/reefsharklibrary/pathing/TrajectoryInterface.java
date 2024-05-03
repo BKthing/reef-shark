@@ -15,6 +15,8 @@ public interface TrajectoryInterface {
 
     Pose2d getTargetPose();
 
+    int getTargetPoseIndex();
+
     Pose2d getTargetMotionState();
 
     boolean targetEndpoint();

@@ -51,7 +51,13 @@ public class LinearHeading implements Path {
     }
 
     @Override
-    public boolean isTangent(Pose2d lastPose) {
-        return startPose().getHeading() == lastPose.getHeading();
+    public double getTangentAngle() {
+        return geometry.tangentAngle(geometry.getTotalDistance());
+    }
+
+    @Override
+    public boolean isTangent(double lastTangentAngle) {
+        //returns true if angles are within 1 degree of eachother
+        return Math.abs(geometry.tangentAngle(0)-lastTangentAngle)<Math.toRadians(1);
     }
 }

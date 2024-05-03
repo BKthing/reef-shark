@@ -3,10 +3,12 @@ package com.reefsharklibrary.pathing;
 import com.reefsharklibrary.data.ConstraintSet;
 import com.reefsharklibrary.data.Pose2d;
 import com.reefsharklibrary.data.Vector2d;
+import com.reefsharklibrary.geometries.CubicBezierCurve;
 import com.reefsharklibrary.geometries.Line;
 import com.reefsharklibrary.pathType.ConstantHeading;
 import com.reefsharklibrary.pathType.LinearHeading;
 import com.reefsharklibrary.pathType.Path;
+import com.reefsharklibrary.pathType.SplineHeading;
 import com.reefsharklibrary.pathing.data.IndexCallMarker;
 import com.reefsharklibrary.pathing.data.MarkerExecutable;
 import com.reefsharklibrary.pathing.data.TemporalCallMarker;
@@ -17,14 +19,15 @@ import java.util.List;
 public class TrajectorySequenceBuilder {
     private final double resolution = .2;
 
+    private boolean firstTrajectory = true;
+
+    private double tangentAngle;
+
     private final List<RawTrajectoryInterface> trajectories = new ArrayList<>();
 
 
     private final List<TemporalCallMarker> globalTemporalCallMarkers = new ArrayList<>();
     private final List<IndexCallMarker> globalCallMarkers = new ArrayList<>();
-
-
-
 
     private final ConstraintSet constraints;
 
@@ -34,6 +37,8 @@ public class TrajectorySequenceBuilder {
     ) {
         trajectories.add(new RawTrajectory(0));
         currentTrajectory().addPose(startPose, 0);
+        tangentAngle = startPose.getHeading();
+
         this.constraints = constraints;
     }
 
@@ -52,6 +57,54 @@ public class TrajectorySequenceBuilder {
         );
     }
 
+    public TrajectorySequenceBuilder lineToSplineHeading(Pose2d endPoint) {
+        return addPath(new SplineHeading(
+                new Line(getLastPose().getVector2d(), endPoint.getVector2d()),
+                getLastPose().getHeading(), endPoint.getHeading())
+        );
+    }
+
+    public TrajectorySequenceBuilder forward(double distance) {
+        double heading = getLastPose().getHeading();
+        return lineToConstantHeading(new Vector2d(getLastPose().getX()+distance*Math.cos(heading), getLastPose().getY()+distance*Math.sin(heading)));
+    }
+
+    public TrajectorySequenceBuilder back(double distance) {
+        double heading = getLastPose().getHeading()+Math.toRadians(180);
+        return lineToConstantHeading(new Vector2d(getLastPose().getX()+distance*Math.cos(heading), getLastPose().getY()+distance*Math.sin(heading)));
+    }
+
+    public TrajectorySequenceBuilder left(double distance) {
+        double heading = getLastPose().getHeading()+Math.toRadians(90);
+        return lineToConstantHeading(new Vector2d(getLastPose().getX()+distance*Math.cos(heading), getLastPose().getY()+distance*Math.sin(heading)));
+    }
+
+    public TrajectorySequenceBuilder right(double distance) {
+        double heading = getLastPose().getHeading()+Math.toRadians(270);
+        return lineToConstantHeading(new Vector2d(getLastPose().getX()+distance*Math.cos(heading), getLastPose().getY()+distance*Math.sin(heading)));
+    }
+
+
+    public TrajectorySequenceBuilder splineToConstantHeading(Vector2d endPoint, double endSplineAngle) {
+        return addPath(new ConstantHeading(
+                new CubicBezierCurve(getLastPose().getVector2d().toPose(tangentAngle), endPoint.toPose(endSplineAngle)),
+                getLastPose().getHeading()) {
+        });
+    }
+
+    public TrajectorySequenceBuilder splineToLineHeading(Pose2d endPoint, double endSplineAngle) {
+        return addPath(new LinearHeading(
+                new CubicBezierCurve(getLastPose().getVector2d().toPose(tangentAngle), endPoint.getVector2d().toPose(endSplineAngle)),
+                getLastPose().getHeading(), endPoint.getHeading())
+        );
+    }
+
+    public TrajectorySequenceBuilder splineToSplineHeading(Pose2d endPoint, double endSplineAngle) {
+        return addPath(new SplineHeading(
+                new CubicBezierCurve(getLastPose().getVector2d().toPose(tangentAngle), endPoint.getVector2d().toPose(endSplineAngle)),
+                getLastPose().getHeading(), endPoint.getHeading())
+        );
+    }
 
 
     //callMarkers
@@ -97,13 +150,15 @@ public class TrajectorySequenceBuilder {
     }
 
     public TrajectorySequenceBuilder addPath(Path pathSegment) {
-        if (pathSegment.isTangent(currentTrajectory().getLastPose())) {
+        if (pathSegment.isTangent(tangentAngle) || firstTrajectory) {
             currentTrajectory().addTangentSet(pathSegment.generate(resolution), pathSegment.totalDistance());
+            firstTrajectory = false;
         } else {
             trajectories.add(new RawTrajectory(currentTrajectory().getTotalDistance()));
             currentTrajectory().addSet(pathSegment.generate(resolution), pathSegment.totalDistance());
         }
 
+        tangentAngle = pathSegment.getTangentAngle();
         return this;
     }
 
