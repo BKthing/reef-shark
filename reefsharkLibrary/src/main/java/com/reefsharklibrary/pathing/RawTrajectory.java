@@ -144,9 +144,7 @@ public class RawTrajectory implements RawTrajectoryInterface {
     private List<Pose2d> calculateVelocities(ConstraintSet constraints, double resolution) {
         List<Pose2d> velocities = new ArrayList<>();
 
-        Pose2d prevVelocities = new Pose2d(0, 0, 0);
-
-        prevVelocities = findVelocities(positions.get(0), prevVelocities, positions.get(0).getHeading(), constraints);
+        Pose2d prevVelocities = findVelocities(positions.get(0), new Pose2d(0, 0, 0), positions.get(0).getHeading(), constraints);
         velocities.add(prevVelocities);
 
         for (int i = 1; i<positions.size(); i++){
@@ -162,7 +160,7 @@ public class RawTrajectory implements RawTrajectoryInterface {
         //Setting the decel point at the end
         //prevVel is set to 0's bc we want the robot to end with vel of 0's
         prevVelocities = new Pose2d(0, 0, 0);
-        velocities.add(velocities.size()-1, prevVelocities);
+//        velocities.add(velocities.size()-1, prevVelocities);
 
 //        while (decelerating) {
 //            prevVelocities = findDecelVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, constraints);
