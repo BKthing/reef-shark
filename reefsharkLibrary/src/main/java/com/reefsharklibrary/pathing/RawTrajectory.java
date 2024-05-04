@@ -201,13 +201,20 @@ public class RawTrajectory implements RawTrajectoryInterface {
 
         double time = (achievableVelocity-initialVelocity)/maxAccel;
 
+        double headingVel = difference.getHeading()/time;
+
+        double maxHeadingVel = Math.min(
+                Math.sqrt(Math.pow(prevVelocities.getHeading(), 2)+2*constraints.getMaxAngularAccel()*difference.getHeading()),
+                constraints.getMaxAngularVel()
+            );
+
+        if (headingVel>maxHeadingVel) {
+            time = difference.getHeading()/maxHeadingVel;
+        }
+
         //divides the change in position by the change in time to give the velocity
         return difference.scale(1/time);
     }
-
-
-
-
 
     private Pose2d findDecelVelocities(Pose2d difference, Pose2d prevVelocities, ConstraintSet constraints) {
         return new Pose2d(0, 0, 0);
