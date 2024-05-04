@@ -183,21 +183,91 @@ public class RawTrajectory implements RawTrajectoryInterface {
         return pose1.getX()<pose2.getX() && pose1.getY()<pose2.getY() && pose1.getHeading()<pose2.getHeading();
     }
 
+    //this is currently a bad estimate at velocity that doesn't take into account a lot of important factors
     private Pose2d findVelocities(Pose2d difference, Pose2d prevVelocities, double heading, ConstraintSet constraints) {
-        //
-        double offsetAngle = difference.getVector2d().getDirection();
-        double rotatedHeading = (heading-difference.getHeading()/2)-offsetAngle;
+        double direction = difference.getDirection();
+        double initialVelocity = prevVelocities.getVector2d().rotate(-direction).getX();
+        double distance = difference.getVector2d().getMagnitude();
 
-        Vector2d rotatedCurVel = prevVelocities.getVector2d().rotate(-offsetAngle);
+        //how much linear velocity the wheels have to exert to turn
+        double headingLinearVel = Math.abs(constraints.radiansToLinearVel()*difference.getHeading());
+        double averageHeading = heading-difference.getHeading()/2;
 
+        //finds how much power the mecanum drive can exert in the given direction relative to its current heading
+        double maxVel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearVel(), direction-averageHeading).getMagnitude()-headingLinearVel;
+        double maxAccel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearAccel(), direction-averageHeading).getMagnitude()-headingLinearVel;
+
+        double achievableVelocity = Math.min(Math.sqrt(Math.pow(initialVelocity, 2) + 2*maxAccel*distance), maxVel);
+
+        double time = (achievableVelocity-initialVelocity)/maxAccel;
+
+        //divides the change in position by the change in time to give the velocity
+        return difference.scale(1/time);
+    }
+
+
+
+
+
+    private Pose2d findDecelVelocities(Pose2d difference, Pose2d prevVelocities, ConstraintSet constraints) {
+        return new Pose2d(0, 0, 0);
+    }
+}
+
+/*
+* Over complicated velocity code
+*
+* Vector2d adjustedMaxVel = constraints.getMaxLinearVel().minus(headingLinearVel);
+        Vector2d maxVelByAccel = new Vector2d()
+
+        double bestX;
+
+        if (adjustedMaxVel.getX()<maxVelByAccel.getX() && adjustedMaxVel.getY()<maxVelByAccel.getY()) {
+            bestX = findIdealVelocity(
+                    new Vector2d(adjustedMaxVel.getX(), 0).rotate(-rotatedHeading).plus(rotatedCurVel),
+                    new Vector2d(0, adjustedMaxVel.getY()).rotate(-rotatedHeading).plus(rotatedCurVel),
+                    new Vector2d(-adjustedMaxVel.getX(), 0).rotate(-rotatedHeading).plus(rotatedCurVel),
+                    new Vector2d(0, -adjustedMaxVel.getY()).rotate(-rotatedHeading).plus(rotatedCurVel)
+            );
+        } else if (adjustedMaxVel.getX()>maxVelByAccel.getX() && adjustedMaxVel.getY()>maxVelByAccel.getY()) {
+            bestX = findIdealVelocity(
+                    new Vector2d(maxVelByAccel.getX(), 0).rotate(-rotatedHeading).plus(rotatedCurVel),
+                    new Vector2d(0, maxVelByAccel.getY()).rotate(-rotatedHeading).plus(rotatedCurVel),
+                    new Vector2d(-maxVelByAccel.getX(), 0).rotate(-rotatedHeading).plus(rotatedCurVel),
+                    new Vector2d(0, -maxVelByAccel.getY()).rotate(-rotatedHeading).plus(rotatedCurVel)
+            );
+        } else {
+            bestX = Math.min(
+                    findIdealVelocity(
+                            new Vector2d(adjustedMaxVel.getX(), 0).rotate(-rotatedHeading).plus(rotatedCurVel),
+                            new Vector2d(0, adjustedMaxVel.getY()).rotate(-rotatedHeading).plus(rotatedCurVel),
+                            new Vector2d(-adjustedMaxVel.getX(), 0).rotate(-rotatedHeading).plus(rotatedCurVel),
+                            new Vector2d(0, -adjustedMaxVel.getY()).rotate(-rotatedHeading).plus(rotatedCurVel)
+                    ),
+                    findIdealVelocity(
+                            new Vector2d(maxVelByAccel.getX(), 0).rotate(-rotatedHeading).plus(rotatedCurVel),
+                            new Vector2d(0, maxVelByAccel.getY()).rotate(-rotatedHeading).plus(rotatedCurVel),
+                            new Vector2d(-maxVelByAccel.getX(), 0).rotate(-rotatedHeading).plus(rotatedCurVel),
+                            new Vector2d(0, -maxVelByAccel.getY()).rotate(-rotatedHeading).plus(rotatedCurVel)
+                    )
+            );
+        }
+
+        Vector2d linearVelocities = new Vector2d(bestX, 0).rotate(offsetAngle);
+
+
+
+
+*
+* private double findIdealVelocity(Vector2d a, Vector2d b, Vector2d c, Vector2d d) {
         //a list containing the vertices of a rhombus describing the velocities that the robot can achieve at a given angle
         //the x-axis the direction the robot needs to travel and we want to find the largest number on the x-axis that is inside the rhombus
         List<Vector2d> velocityBounds = new ArrayList<>();
 
-        velocityBounds.add(new Vector2d(constraints.getMaxVel().getX(), 0).rotate(-rotatedHeading).plus(rotatedCurVel));
-        velocityBounds.add(new Vector2d(0, constraints.getMaxVel().getY()).rotate(-rotatedHeading).plus(rotatedCurVel));
-        velocityBounds.add(new Vector2d(-constraints.getMaxVel().getX(), 0).rotate(-rotatedHeading).plus(rotatedCurVel));
-        velocityBounds.add(new Vector2d(0, -constraints.getMaxVel().getY()).rotate(-rotatedHeading).plus(rotatedCurVel));
+        velocityBounds.add(a);
+        velocityBounds.add(b);
+        velocityBounds.add(c);
+        velocityBounds.add(d);
 
         //
         List<Integer> above = new ArrayList<>();
@@ -223,13 +293,14 @@ public class RawTrajectory implements RawTrajectoryInterface {
                 furthestX = Math.max(velocityBounds.get(on.get(0)).getX(), velocityBounds.get(on.get(1)).getX());
             }
         } else if (above.size() == 0 || below.size() == 0) {
+            furthestX = 0;
             //find the point closest to the x axis
         } else if (above.size() == 1) {
             furthestX = intersectingLinesXIntercept(
                     velocityBounds.get(above.get(0)),
                     velocityBounds.get(bounds(above.get(0)-1)),
                     velocityBounds.get(bounds(above.get(0)+1))
-                    );
+            );
         } else if (below.size() == 1) {
             furthestX = intersectingLinesXIntercept(
                     velocityBounds.get(below.get(0)),
@@ -253,16 +324,10 @@ public class RawTrajectory implements RawTrajectoryInterface {
                     velocityBounds.get(3)
             );
         }
-
-
-
-
-
-
-        return new Pose2d(0, 0, 0);
     }
-
-    private double intersectingLinesXIntercept(Vector2d sharedPoint, Vector2d pointA, Vector2d pointB) {
+    *
+    *
+* private double intersectingLinesXIntercept(Vector2d sharedPoint, Vector2d pointA, Vector2d pointB) {
         return parallelLinesXIntercept(sharedPoint, pointA, sharedPoint, pointB);
     }
 
@@ -271,7 +336,7 @@ public class RawTrajectory implements RawTrajectoryInterface {
     }
 
     private double lineXIntercept(Vector2d lineA, Vector2d lineB) {
-
+        return -lineA.getY()*((lineA.getX()-lineB.getX())/(lineA.getY()-lineB.getY()))+lineA.getX();
     }
 
     private int bounds(int bound) {
@@ -282,8 +347,4 @@ public class RawTrajectory implements RawTrajectoryInterface {
         }
         return bound;
     }
-
-    private Pose2d findDecelVelocities(Pose2d difference, Pose2d prevVelocities, ConstraintSet constraints) {
-        return new Pose2d(0, 0, 0);
-    }
-}
+* */

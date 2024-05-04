@@ -6,6 +6,16 @@ public class Vector2d {
     private final double x;
     private final double y;
 
+    public Vector2d(double magnitude, double angle, boolean constructAtAngle) {
+        if (constructAtAngle) {
+            this.x = Math.cos(angle)*magnitude;
+            this.y = Math.sin(angle)*magnitude;
+        } else {
+            this.x = magnitude;
+            this.y = angle;
+        }
+    }
+
     public Vector2d(double x, double y) {
         this.x = x;
         this.y = y;
@@ -35,12 +45,24 @@ public class Vector2d {
         return new Vector2d(x*scale, y*scale);
     }
 
+    public Vector2d scaleToMagnitude(double magnitude) {
+        return new Vector2d(magnitude, this.getDirection());
+    }
+
     public Vector2d minus(Vector2d vector) {
         return new Vector2d(x-vector.getX(), y- vector.getY());
     }
 
     public Vector2d plus(Vector2d vector) {
         return new Vector2d(x+vector.getX(), y+vector.getY());
+    }
+
+    public Vector2d minus(double value) {
+        return new Vector2d(x-value, y- value);
+    }
+
+    public Vector2d plus(double value) {
+        return new Vector2d(x+value, y+value);
     }
 
     public Vector2d divide(Vector2d vector) {

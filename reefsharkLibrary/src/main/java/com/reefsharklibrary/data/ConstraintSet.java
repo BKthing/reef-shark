@@ -17,6 +17,8 @@ public class ConstraintSet {
     private final double wheelBaseWidth;
     private final double wheelBaseRadius;
 
+    private final double radiansConversion;
+
 
     public ConstraintSet(PIDCoeficients lateralPID, PIDCoeficients headingPID, VelConstraint velConstraint, VelConstraint strafeVelConstraint, AngVelConstraint angVelConstraint, Pose2d naturalDecel, double wheelBaseWidth) {
         this.angVelConstraint = angVelConstraint;
@@ -28,6 +30,7 @@ public class ConstraintSet {
         this.headingPID = headingPID;
         this.wheelBaseWidth = wheelBaseWidth;
         this.wheelBaseRadius = wheelBaseWidth/2;
+        radiansConversion = (wheelBaseRadius*wheelBaseRadius)/2;
     }
 
     public ConstraintSet(PIDCoeficients lateralPID, PIDCoeficients headingPID, VelConstraint velConstraint, AngVelConstraint angVelConstraint, Pose2d naturalDecel, double wheelBaseWidth) {
@@ -40,6 +43,7 @@ public class ConstraintSet {
         this.headingPID = headingPID;
         this.wheelBaseWidth = wheelBaseWidth;
         this.wheelBaseRadius = wheelBaseWidth/2;
+        radiansConversion = (wheelBaseRadius*wheelBaseRadius)/2;
     }
 
     /*
@@ -110,12 +114,16 @@ public class ConstraintSet {
         return headingPID;
     }
 
-    double getWheelBaseWidth() {
+    public double getWheelBaseWidth() {
         return wheelBaseWidth;
     }
 
-    double getWheelBaseRadius() {
+    public double getWheelBaseRadius() {
         return wheelBaseRadius;
+    }
+
+    public double radiansToLinearVel() {
+        return radiansConversion;
     }
 
 }
