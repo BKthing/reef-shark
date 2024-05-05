@@ -30,4 +30,7 @@ public interface TrajectoryInterface {
     List<Pose2d> poseList();
 
     List<IndexCallMarker> callMarkerList();
+
+    int callMarkerIndex();
+
 }

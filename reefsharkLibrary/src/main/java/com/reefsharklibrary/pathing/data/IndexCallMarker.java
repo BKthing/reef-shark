@@ -22,6 +22,14 @@ public class IndexCallMarker implements Comparable<IndexCallMarker> {
         this.callPosition = callPosition;
     }
 
+    public boolean callIndex(int index) {
+        if (index >= callPosition) {
+            this.run();
+            return true;
+        }
+        return false;
+    }
+
     public int getCallPosition() {
         return callPosition;
     }

@@ -180,11 +180,11 @@ public class TrajectorySequenceBuilder {
     }
 
     private void sortGlobalCallMarkers() {
-        for (IndexCallMarker callMarker :globalCallMarkers) {
+        for (IndexCallMarker callMarker : globalCallMarkers) {
             int i = 0;
 
             //sets i to the index the call marker should be placed in
-            while (!(callMarker.getCallDistance() < trajectories.get(i).getTotalDistance()) && i < trajectories.size()-1) {
+            while (callMarker.getCallDistance() < trajectories.get(i).getTotalDistance() && i < trajectories.size()-1) {
                 i++;
             }
 
@@ -193,8 +193,8 @@ public class TrajectorySequenceBuilder {
             }
 
             trajectories.get(i).addCallMarker(callMarker);
-            globalCallMarkers.clear();
         }
+        globalCallMarkers.clear();
     }
 
     public TrajectorySequence build() {

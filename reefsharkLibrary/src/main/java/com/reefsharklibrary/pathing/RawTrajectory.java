@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
 import java.util.Vector;
 
 public class RawTrajectory implements RawTrajectoryInterface {
@@ -134,7 +135,7 @@ public class RawTrajectory implements RawTrajectoryInterface {
         for(IndexCallMarker callMarker: callMarkers) {
             callMarker.setCallPosition(
                     //Assigns closest list position to markers
-                    Math.min((int) Math.round(callMarker.getCallDistance()/resolution), positions.size())-1
+                    Math.min((int) Math.round(callMarker.getCallDistance()/resolution), positions.size()-1)
             );
         }
     }
@@ -144,45 +145,46 @@ public class RawTrajectory implements RawTrajectoryInterface {
     private List<Pose2d> calculateVelocities(ConstraintSet constraints, double resolution) {
         List<Pose2d> velocities = new ArrayList<>();
 
-        Pose2d prevVelocities = findVelocities(positions.get(0), new Pose2d(0, 0, 0), positions.get(0).getHeading(), constraints);
-        velocities.add(prevVelocities);
+        Pose2d prevVelocities = new Pose2d(0, 0, 0);
 
-        for (int i = 1; i<positions.size(); i++){
-
-            prevVelocities = findVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, positions.get(0).getHeading(), constraints);
+        for (int i = 0; i<positions.size()-1; i++){
+            prevVelocities = findVelocities(positions.get(i+1).minus(positions.get(i)), prevVelocities, positions.get(i+1).getHeading(), constraints);
             velocities.add(prevVelocities);
         }
 
-        int i = velocities.size()-2;
+        velocities.add(new Pose2d(0, 0, 0));
+        prevVelocities = new Pose2d(0, 0, 0);
+
+        int i = velocities.size()-1;
 
         boolean decelerating = true;
 
-        //Setting the decel point at the end
-        //prevVel is set to 0's bc we want the robot to end with vel of 0's
-        prevVelocities = new Pose2d(0, 0, 0);
-//        velocities.add(velocities.size()-1, prevVelocities);
-
-//        while (decelerating) {
-//            prevVelocities = findDecelVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, constraints);
-//
-//            //i<2 prevents it from calling a negative index on the next loop, should never be true on a normal trajectory
-//            if (poseLessThan(prevVelocities, velocities.get(i)) || i<2) {
-//                decelerating = false;
-//            } else {
-//                velocities.add(i, prevVelocities);
-//                i--;
-//            }
+//        for (int i = positions.size()-1; i>0; i--){
+//            prevVelocities = findDecelVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, positions.get(i).getHeading(), constraints);
+//            velocities.set(i-1, prevVelocities);
 //        }
+
+        while (decelerating) {
+            prevVelocities = findDecelVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, positions.get(i).getHeading(), constraints);
+
+            if (poseLessThan(velocities.get(i-1), prevVelocities) || i<2) {
+                decelerating = false;
+            } else {
+                velocities.set(i-1, prevVelocities);
+                i--;
+            }
+        }
 
         return velocities;
     }
 
     private boolean poseLessThan(Pose2d pose1, Pose2d pose2) {
-        return pose1.getX()<pose2.getX() && pose1.getY()<pose2.getY() && pose1.getHeading()<pose2.getHeading();
+        return Math.abs(pose1.getX())<Math.abs(pose2.getX()) && Math.abs(pose1.getY())<Math.abs(pose2.getY());// && pose1.getHeading()<pose2.getHeading()
     }
 
     //this is currently a bad estimate at velocity that doesn't take into account a lot of important factors
     private Pose2d findVelocities(Pose2d difference, Pose2d prevVelocities, double heading, ConstraintSet constraints) {
+
         double direction = difference.getDirection();
         double initialVelocity = prevVelocities.getVector2d().rotate(-direction).getX();
         double distance = difference.getVector2d().getMagnitude();
@@ -195,9 +197,16 @@ public class RawTrajectory implements RawTrajectoryInterface {
         double maxVel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearVel(), direction-averageHeading).getMagnitude()-headingLinearVel;
         double maxAccel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearAccel(), direction-averageHeading).getMagnitude()-headingLinearVel;
 
-        double achievableVelocity = Math.min(Math.sqrt(Math.pow(initialVelocity, 2) + 2*maxAccel*distance), maxVel);
+        double achievableVelocity = Math.sqrt(Math.pow(initialVelocity, 2) + 2*maxAccel*distance);
 
-        double time = (achievableVelocity-initialVelocity)/maxAccel;
+        double time;
+
+        if (achievableVelocity>maxVel) {
+            //TODO: find a better time estimate for when maxVel is greater than achievableVel
+            time = distance/maxVel;
+        } else {
+            time = (achievableVelocity-initialVelocity)/maxAccel;
+        }
 
         double headingVel = difference.getHeading()/time;
 
@@ -214,8 +223,43 @@ public class RawTrajectory implements RawTrajectoryInterface {
         return difference.scale(1/time);
     }
 
-    private Pose2d findDecelVelocities(Pose2d difference, Pose2d prevVelocities, ConstraintSet constraints) {
-        return new Pose2d(0, 0, 0);
+    private Pose2d findDecelVelocities(Pose2d difference, Pose2d prevVelocities, double heading, ConstraintSet constraints) {
+        double direction = difference.getDirection();
+        double initialVelocity = prevVelocities.getVector2d().rotate(-direction).getX();
+        double distance = difference.getVector2d().getMagnitude();
+
+        //how much linear velocity the wheels have to exert to turn
+        double headingLinearVel = Math.abs(constraints.radiansToLinearVel()*difference.getHeading());
+        double averageHeading = heading-difference.getHeading()/2;
+
+        //finds how much power the mecanum drive can exert in the given direction relative to its current heading
+        double maxVel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearVel(), direction-averageHeading).getMagnitude()-headingLinearVel;
+        double maxAccel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearDecel(), direction-averageHeading).getMagnitude()-headingLinearVel;
+
+        double achievableVelocity = Math.sqrt(Math.pow(initialVelocity, 2) + 2*maxAccel*distance);
+
+        double time;
+
+        if (achievableVelocity>maxVel) {
+            //TODO: find a better time estimate for when maxVel is greater than achievableVel
+            time = distance/maxVel;
+        } else {
+            time = (achievableVelocity-initialVelocity)/maxAccel;
+        }
+
+        double headingVel = difference.getHeading()/time;
+
+        double maxHeadingVel = Math.min(
+                Math.sqrt(Math.pow(prevVelocities.getHeading(), 2)+2*constraints.getMaxAngularDecel()*difference.getHeading()),
+                constraints.getMaxAngularVel()
+        );
+
+        if (headingVel>maxHeadingVel) {
+            time = difference.getHeading()/maxHeadingVel;
+        }
+
+        //divides the change in position by the change in time to give the velocity
+        return difference.scale(1/time);
     }
 }
 

@@ -65,4 +65,9 @@ public class PointTurnTrajectory implements TrajectoryInterface {
     public List<IndexCallMarker> callMarkerList() {
         return null;
     }
+
+    @Override
+    public int callMarkerIndex() {
+        return 0;
+    }
 }

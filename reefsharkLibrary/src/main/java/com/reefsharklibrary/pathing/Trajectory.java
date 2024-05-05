@@ -4,7 +4,9 @@ import com.reefsharklibrary.pathing.data.IndexCallMarker;
 import com.reefsharklibrary.data.Pose2d;
 import com.reefsharklibrary.pathing.data.TemporalCallMarker;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 public class Trajectory implements TrajectoryInterface {
 
@@ -12,6 +14,7 @@ public class Trajectory implements TrajectoryInterface {
     private final List<Pose2d> motionStates;
 
     private final List<IndexCallMarker> callMarkers;
+    private int callMarkerIndex = 0;
 
     private final List<TemporalCallMarker> localTemporalMarkers;
 
@@ -61,6 +64,7 @@ public class Trajectory implements TrajectoryInterface {
     public void updateTargetPoint(Pose2d pose) {
         advanceForward(pose, pose.getVector2d().minus(positions.get(currentPoseIndex).getVector2d()).compareVal());
         advanceBack(pose, pose.getVector2d().minus(positions.get(currentPoseIndex).getVector2d()).compareVal());
+        updateCallMarkers();
     }
 
     private void advanceForward(Pose2d pose, double prevCompareVal) {
@@ -83,6 +87,12 @@ public class Trajectory implements TrajectoryInterface {
         }
     }
 
+    private void updateCallMarkers() {
+        while (callMarkerIndex<callMarkerList().size() && callMarkerList().get(callMarkerIndex).callIndex(currentPoseIndex)) {
+            callMarkerIndex++;
+        }
+    }
+
     @Override
     public Pose2d getTargetPose() {
         return positions.get(currentPoseIndex);
@@ -92,6 +102,8 @@ public class Trajectory implements TrajectoryInterface {
     public int getTargetPoseIndex() {
         return currentPoseIndex;
     }
+
+
 
     @Override
     public Pose2d getTargetMotionState() {
@@ -128,5 +140,8 @@ public class Trajectory implements TrajectoryInterface {
         return callMarkers;
     }
 
-
+    @Override
+    public int callMarkerIndex() {
+        return callMarkerIndex;
+    }
 }
