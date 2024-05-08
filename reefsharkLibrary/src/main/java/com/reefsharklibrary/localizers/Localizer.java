@@ -17,4 +17,6 @@ public interface Localizer {
     Pose2d getPoseVelocity();
     Pose2d getPoseAcceleration();
 
+    void setHistoryLimit(int maxHistorySize);
+
 }

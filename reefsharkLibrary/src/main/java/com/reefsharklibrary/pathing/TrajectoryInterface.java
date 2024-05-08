@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface TrajectoryInterface {
 
+    void start();
+
     Pose2d startPose();
 
     Pose2d endPose();

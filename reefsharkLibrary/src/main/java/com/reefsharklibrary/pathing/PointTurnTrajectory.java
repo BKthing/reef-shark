@@ -7,6 +7,11 @@ import java.util.List;
 
 public class PointTurnTrajectory implements TrajectoryInterface {
     @Override
+    public void start() {
+
+    }
+
+    @Override
     public Pose2d startPose() {
         return null;
     }

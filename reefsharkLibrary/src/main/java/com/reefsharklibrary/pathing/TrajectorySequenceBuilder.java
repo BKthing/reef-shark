@@ -14,10 +14,11 @@ import com.reefsharklibrary.pathing.data.MarkerExecutable;
 import com.reefsharklibrary.pathing.data.TemporalCallMarker;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class TrajectorySequenceBuilder {
-    private final double resolution = .2;
+    private final double resolution = .15;
 
     private boolean firstTrajectory = true;
 
@@ -40,6 +41,11 @@ public class TrajectorySequenceBuilder {
         tangentAngle = startPose.getHeading();
 
         this.constraints = constraints;
+    }
+
+    public TrajectorySequenceBuilder setTargetEndDistance(double distance) {
+        currentTrajectory().setTargetEndDistance(distance);
+        return this;
     }
 
     //Path types
@@ -184,7 +190,7 @@ public class TrajectorySequenceBuilder {
             int i = 0;
 
             //sets i to the index the call marker should be placed in
-            while (callMarker.getCallDistance() < trajectories.get(i).getTotalDistance() && i < trajectories.size()-1) {
+            while (callMarker.getCallDistance() > trajectories.get(i).getTotalDistance() && i < trajectories.size()-1) {
                 i++;
             }
 
@@ -199,6 +205,8 @@ public class TrajectorySequenceBuilder {
 
     public TrajectorySequence build() {
         sortGlobalCallMarkers();
+
+        Collections.sort(globalTemporalCallMarkers);
 
         List<TrajectoryInterface> builtTrajectories = new ArrayList<>();
         for (RawTrajectoryInterface currentTrajectory: trajectories) {

@@ -31,6 +31,8 @@ public class TwoWheelLocalizer implements Localizer {
     public LinkedList<TimePose2d> prevPositions = new LinkedList<>();
     public LinkedList<TimePose2d> prevVelocities = new LinkedList<>();
 
+    private int maxHistorySize = 200;
+
 
     private Pose2d poseEstimate = new Pose2d(0, 0, 0);
 
@@ -86,6 +88,14 @@ public class TwoWheelLocalizer implements Localizer {
 
         updateFromRelative(deltas);
         updatePoseVelocitiy();
+
+        if (prevPositions.size()>maxHistorySize) {
+            prevPositions.removeFirst();
+        }
+
+        if (prevVelocities.size()>maxHistorySize) {
+            prevVelocities.removeFirst();
+        }
     }
 
     public void updateFromRelative(double[] deltas) {
@@ -188,4 +198,11 @@ public class TwoWheelLocalizer implements Localizer {
         return cur.minus(old).scale((double) 1000/(cur.time-old.time));
     }
 
+    @Override
+    public void setHistoryLimit(int maxHistorySize) {
+        if (maxHistorySize<2) {
+            throw new RuntimeException("History size is to small");
+        }
+        this.maxHistorySize = maxHistorySize+1;
+    }
 }

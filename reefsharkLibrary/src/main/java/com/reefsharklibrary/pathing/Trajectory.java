@@ -1,5 +1,6 @@
 package com.reefsharklibrary.pathing;
 
+import com.reefsharklibrary.misc.ElapsedTimer;
 import com.reefsharklibrary.pathing.data.IndexCallMarker;
 import com.reefsharklibrary.data.Pose2d;
 import com.reefsharklibrary.pathing.data.TemporalCallMarker;
@@ -17,6 +18,9 @@ public class Trajectory implements TrajectoryInterface {
     private int callMarkerIndex = 0;
 
     private final List<TemporalCallMarker> localTemporalMarkers;
+    private int temporalMarkerIndex = 0;
+
+    private final ElapsedTimer timer = new ElapsedTimer();
 
     private final Pose2d followError;
     private final Pose2d endError;
@@ -51,6 +55,11 @@ public class Trajectory implements TrajectoryInterface {
     }
 
     @Override
+    public void start() {
+        timer.reset();
+    }
+
+    @Override
     public Pose2d startPose() {
         return positions.get(0);
     }
@@ -65,6 +74,7 @@ public class Trajectory implements TrajectoryInterface {
         advanceForward(pose, pose.getVector2d().minus(positions.get(currentPoseIndex).getVector2d()).compareVal());
         advanceBack(pose, pose.getVector2d().minus(positions.get(currentPoseIndex).getVector2d()).compareVal());
         updateCallMarkers();
+        updateTemporalMarkers();
     }
 
     private void advanceForward(Pose2d pose, double prevCompareVal) {
@@ -88,8 +98,14 @@ public class Trajectory implements TrajectoryInterface {
     }
 
     private void updateCallMarkers() {
-        while (callMarkerIndex<callMarkerList().size() && callMarkerList().get(callMarkerIndex).callIndex(currentPoseIndex)) {
+        while (callMarkerIndex<callMarkers.size() && callMarkers.get(callMarkerIndex).callIndex(currentPoseIndex)) {
             callMarkerIndex++;
+        }
+    }
+
+    private void updateTemporalMarkers() {
+        while (temporalMarkerIndex<localTemporalMarkers.size() && localTemporalMarkers.get(temporalMarkerIndex).callTime(timer.seconds())) {
+            temporalMarkerIndex++;
         }
     }
 
@@ -112,7 +128,7 @@ public class Trajectory implements TrajectoryInterface {
 
     @Override
     public boolean targetEndpoint() {
-        return targetEndPositionThreshold>=currentPoseIndex;
+        return currentPoseIndex>=targetEndPositionThreshold;
     }
 
     @Override

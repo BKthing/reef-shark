@@ -9,6 +9,14 @@ public class TemporalCallMarker implements Comparable<TemporalCallMarker> {
         this.executable = executable;
     }
 
+    public boolean callTime(double time) {
+        if (callTime <= time) {
+            this.run();
+            return true;
+        }
+        return false;
+    }
+
     public double getCallTime() {
         return callTime;
     }

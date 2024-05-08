@@ -15,6 +15,8 @@ public class EndpointController {
     private final PIDCoeficients headingPID;
     private final Pose2d naturalDecel;
 
+    private Pose2d estimatedEndPos = new Pose2d(0, 0, 0);
+
     private double headingI = 0;
 
     private Vector2d lateralI = new Vector2d(0, 0);
@@ -27,10 +29,10 @@ public class EndpointController {
 
     public MotorPowers calculatePowers(Pose2d currentPose, Pose2d currentVelocity, Pose2d currentAcceleration, Pose2d targetPose) {
         drivePower.reset();
+        estimatedEndPos = estimateEndPos(currentPose, currentVelocity, currentAcceleration);
+//
+//        drivePower.orderedAddPowers(findCorrectivePowers(targetPose.minus(estimatedEndPos)));
 
-        drivePower.orderedAddPowers(findCorrectivePowers(
-                targetPose.minus(estimateEndPos(currentPose, currentVelocity, currentAcceleration))
-        ));
         return drivePower;
     }
 
@@ -59,10 +61,15 @@ public class EndpointController {
         //making sure that the deceleration is slowing the robot down
         Deceleration *= Math.signum(Velocity);
 
+        return Position + (Velocity*Velocity)/(2*Deceleration);
+
         //finding time where the robot comes to a stop
-        double t = (Acceleration+Math.sqrt(Math.pow(Acceleration, 2) + 2*Deceleration*Velocity))/Deceleration;
+//        double t = (Acceleration+Math.sqrt(Math.pow(Acceleration, 2) + 2*Deceleration*Velocity))/Deceleration;
         //returning estimated pos at t
-        return ((-Deceleration/3+Acceleration)*.5*t+Velocity)*t+Position;
+//        return ((-Deceleration/3+Acceleration)*.5*t+Velocity)*t+Position;
     }
 
+    public Pose2d getEstimatedEndPos() {
+        return estimatedEndPos;
+    }
 }

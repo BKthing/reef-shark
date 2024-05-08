@@ -7,11 +7,8 @@ import com.reefsharklibrary.pathing.data.IndexCallMarker;
 import com.reefsharklibrary.pathing.data.TemporalCallMarker;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Queue;
-import java.util.Vector;
 
 public class RawTrajectory implements RawTrajectoryInterface {
     private final List<Pose2d> positions = new ArrayList<>();
@@ -112,7 +109,7 @@ public class RawTrajectory implements RawTrajectoryInterface {
     public TrajectoryInterface build(ConstraintSet constraints, double resolution) {
         if (temporalCallMarkers.size()>0) {
             sortTemporalMarkers();
-            minTime = temporalCallMarkers.get(temporalCallMarkers.size()-1).getCallTime();
+            minTime = Math.max(temporalCallMarkers.get(temporalCallMarkers.size()-1).getCallTime(), minTime);
         }
 
         if (callMarkers.size()>0) {
@@ -159,34 +156,31 @@ public class RawTrajectory implements RawTrajectoryInterface {
 
         boolean decelerating = true;
 
-//        for (int i = positions.size()-1; i>0; i--){
+//        while (decelerating) {
 //            prevVelocities = findDecelVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, positions.get(i).getHeading(), constraints);
-//            velocities.set(i-1, prevVelocities);
+//
+//            if (poseLessThanOrEqual(velocities.get(i-1), prevVelocities) || i<2) {
+//                decelerating = false;
+//            } else {
+//                velocities.set(i-1, prevVelocities);
+//                i--;
+//            }
 //        }
-
-        while (decelerating) {
-            prevVelocities = findDecelVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, positions.get(i).getHeading(), constraints);
-
-            if (poseLessThan(velocities.get(i-1), prevVelocities) || i<2) {
-                decelerating = false;
-            } else {
-                velocities.set(i-1, prevVelocities);
-                i--;
-            }
-        }
 
         return velocities;
     }
 
-    private boolean poseLessThan(Pose2d pose1, Pose2d pose2) {
-        return Math.abs(pose1.getX())<Math.abs(pose2.getX()) && Math.abs(pose1.getY())<Math.abs(pose2.getY());// && pose1.getHeading()<pose2.getHeading()
+    private boolean poseLessThanOrEqual(Pose2d pose1, Pose2d pose2) {
+        return Math.abs(pose1.getX())<=Math.abs(pose2.getX()) && Math.abs(pose1.getY())<=Math.abs(pose2.getY());// && pose1.getHeading()<pose2.getHeading()
     }
 
     //this is currently a bad estimate at velocity that doesn't take into account a lot of important factors
+    //TODO: take into consideration how much force it takes to change the direction of velocity so that tight turns will work
     private Pose2d findVelocities(Pose2d difference, Pose2d prevVelocities, double heading, ConstraintSet constraints) {
 
         double direction = difference.getDirection();
-        double initialVelocity = prevVelocities.getVector2d().rotate(-direction).getX();
+        Vector2d initialVelocities = prevVelocities.getVector2d().rotate(-direction);
+        double initialVelocity = initialVelocities.getX();
         double distance = difference.getVector2d().getMagnitude();
 
         //how much linear velocity the wheels have to exert to turn
@@ -202,7 +196,6 @@ public class RawTrajectory implements RawTrajectoryInterface {
         double time;
 
         if (achievableVelocity>maxVel) {
-            //TODO: find a better time estimate for when maxVel is greater than achievableVel
             time = distance/maxVel;
         } else {
             time = (achievableVelocity-initialVelocity)/maxAccel;
