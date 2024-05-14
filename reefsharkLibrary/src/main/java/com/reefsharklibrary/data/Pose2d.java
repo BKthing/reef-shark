@@ -34,6 +34,11 @@ public class Pose2d {
         return vector2d;
     }
 
+    public Pose2d rotateVector(double radians) {
+        return new Pose2d(vector2d.rotate(radians), heading);
+    }
+
+
     public Pose2d scale(double scale) {
         return new Pose2d(vector2d.scale(scale), heading*scale);
     }
@@ -68,5 +73,9 @@ public class Pose2d {
 
     public String toString() {
         return vector2d.toString() + String.format(" heading: %,3.2f", heading*180/Math.PI);
+    }
+
+    public String toStringRadians() {
+        return vector2d.toString() + String.format(" heading: %,3.2f", heading);
     }
 }

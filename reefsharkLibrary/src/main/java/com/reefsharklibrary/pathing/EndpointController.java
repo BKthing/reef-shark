@@ -27,9 +27,9 @@ public class EndpointController {
         this.naturalDecel = naturalDecel;
     }
 
-    public MotorPowers calculatePowers(Pose2d currentPose, Pose2d currentVelocity, Pose2d currentAcceleration, Pose2d targetPose) {
+    public MotorPowers calculatePowers(Pose2d currentPose, Pose2d currentVelocity, Pose2d targetPose) {
         drivePower.reset();
-        estimatedEndPos = estimateEndPos(currentPose, currentVelocity, currentAcceleration);
+        estimatedEndPos = estimateEndPos(currentPose, currentVelocity);
 //
 //        drivePower.orderedAddPowers(findCorrectivePowers(targetPose.minus(estimatedEndPos)));
 
@@ -49,22 +49,22 @@ public class EndpointController {
     }
 
     //estimates the position where the robot will come to a stop
-    private Pose2d estimateEndPos(Pose2d currentPose, Pose2d currentVelocity, Pose2d currentAcceleration) {
+    private Pose2d estimateEndPos(Pose2d currentPose, Pose2d currentVelocity) {
         return new Pose2d(
-                findEndPoint(currentAcceleration.getX(), naturalDecel.getX(), currentVelocity.getX(), currentPose.getX()),
-                findEndPoint(currentAcceleration.getY(), naturalDecel.getY(), currentVelocity.getY(), currentPose.getY()),
-                findEndPoint(currentAcceleration.getHeading(), naturalDecel.getHeading(), currentVelocity.getHeading(), currentPose.getHeading())
+                findEndPoint(naturalDecel.getX(), currentVelocity.getX(), currentPose.getX()),
+                findEndPoint(naturalDecel.getY(), currentVelocity.getY(), currentPose.getY()),
+                findEndPoint(naturalDecel.getHeading(), currentVelocity.getHeading(), currentPose.getHeading())
         );
     }
 
-    private double findEndPoint(double Acceleration, double Deceleration, double Velocity, double Position) {
+    private double findEndPoint(double Deceleration, double Velocity, double Position) {
         //making sure that the deceleration is slowing the robot down
         Deceleration *= Math.signum(Velocity);
 
         return Position + (Velocity*Velocity)/(2*Deceleration);
 
         //finding time where the robot comes to a stop
-//        double t = (Acceleration+Math.sqrt(Math.pow(Acceleration, 2) + 2*Deceleration*Velocity))/Deceleration;
+//        double t = (Acceleration+Math.sqrt(Math.pow(Acceleration, 2) - 2*Deceleration*Velocity))/-Deceleration;
         //returning estimated pos at t
 //        return ((-Deceleration/3+Acceleration)*.5*t+Velocity)*t+Position;
     }

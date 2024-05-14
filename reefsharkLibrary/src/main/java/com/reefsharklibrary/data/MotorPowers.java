@@ -63,28 +63,34 @@ public class MotorPowers {
     public void addHeading(double heading) {
         double scaledHeading = getScaledPower(heading);
 
-        motorPowers.add(0, scaledHeading);
-        motorPowers.add(1, scaledHeading);
-        motorPowers.add(2, -scaledHeading);
-        motorPowers.add(3, -scaledHeading);
+        add(0, scaledHeading);
+        add(1, scaledHeading);
+        add(2, -scaledHeading);
+        add(3, -scaledHeading);
+
+        checkNaN();
     }
 
     public void addX(double x) {
         double scaledX = getScaledPower(x);
 
-        motorPowers.add(0, scaledX);
-        motorPowers.add(1, scaledX);
-        motorPowers.add(2, scaledX);
-        motorPowers.add(3, scaledX);
+        add(0, scaledX);
+        add(1, scaledX);
+        add(2, scaledX);
+        add(3, scaledX);
+
+        checkNaN();
     }
 
     public void addY(double y) {
         double scaledY = getScaledPower(y);
 
-        motorPowers.add(0, -scaledY);
-        motorPowers.add(1, scaledY);
-        motorPowers.add(2, -scaledY);
-        motorPowers.add(3, scaledY);
+        add(0, -scaledY);
+        add(1, scaledY);
+        add(2, -scaledY);
+        add(3, scaledY);
+
+        checkNaN();
     }
 
     public void addVector(Vector2d vector) {
@@ -94,10 +100,12 @@ public class MotorPowers {
             vector = vector.scale(remainingPower/totalPower);
         }
 
-        motorPowers.add(0, vector.getX() - vector.getY());
-        motorPowers.add(1, vector.getX() + vector.getY());
-        motorPowers.add(2, vector.getX() - vector.getY());
-        motorPowers.add(3, vector.getX() + vector.getY());
+        add(0, vector.getX() - vector.getY());
+        add(1, vector.getX() + vector.getY());
+        add(2, vector.getX() - vector.getY());
+        add(3, vector.getX() + vector.getY());
+
+        checkNaN();
     }
 
     public void orderedAddPowers(Pose2d pose) {
@@ -112,9 +120,32 @@ public class MotorPowers {
             pose = pose.scale(remainingPower/totalPower);
         }
 
-        motorPowers.add(0, pose.getX() - pose.getY() + pose.getHeading());
-        motorPowers.add(1, pose.getX() + pose.getY() + pose.getHeading());
-        motorPowers.add(2, pose.getX() - pose.getY() - pose.getHeading());
-        motorPowers.add(3, pose.getX() + pose.getY() - pose.getHeading());
+        add(0, pose.getX() - pose.getY() + pose.getHeading());
+        add(1, pose.getX() + pose.getY() + pose.getHeading());
+        add(2, pose.getX() - pose.getY() - pose.getHeading());
+        add(3, pose.getX() + pose.getY() - pose.getHeading());
+
+        checkNaN();
+    }
+
+    private void add(int index, double value) {
+        motorPowers.set(index, motorPowers.get(index)+value);
+    }
+
+    private void checkNaN() {
+        if (!Double.isFinite(motorPowers.get(0)) || !Double.isFinite(motorPowers.get(1)) || !Double.isFinite(motorPowers.get(2)) || !Double.isFinite(motorPowers.get(3))) {
+            throw new RuntimeException("Non Finite Motor Powers");
+        }
+    }
+
+    public static Pose2d powersToPose(List<Double> powers) {
+        if (powers.size() != 4)
+            throw new RuntimeException("Invalid list of motor powers");
+
+        return new Pose2d((powers.get(1)+powers.get(2))/2, (powers.get(3)-powers.get(2))/2, (powers.get(1)-powers.get(3))/2);
+    }
+
+    public String toString() {
+        return String.format("Fl: %,3.2f Fr: %,3.2f Bl: %,3.2f Br: %,3.2f", motorPowers.get(0), motorPowers.get(3), motorPowers.get(1), motorPowers.get(2));
     }
 }

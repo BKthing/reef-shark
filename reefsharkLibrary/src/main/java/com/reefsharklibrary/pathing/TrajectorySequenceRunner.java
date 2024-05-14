@@ -70,7 +70,8 @@ public class TrajectorySequenceRunner {
             case FOLLOW_TRAJECTORY:
                 trajectorySequence.getCurrentTrajectory().updateTargetPoint(poseEstimate);
                 trajectorySequence.updateGlobalTemporalMarkers();
-//                motorPowers = pidController.calculatePowers(poseEstimate, poseVelocity, poseAcceleration, trajectorySequence.getCurrentTrajectory().getTargetPose(), trajectorySequence.getCurrentTrajectory().getTargetMotionState());
+
+                motorPowers = pidController.calculatePowers(poseEstimate, poseVelocity, poseAcceleration, trajectorySequence.getCurrentTrajectory().getTargetPose(), trajectorySequence.getCurrentTrajectory().getTargetMotionState());
 //
                 if (trajectorySequence.getCurrentTrajectory().targetEndpoint()) {//trajectorySequence.getCurrentTrajectory().targetEndpoint()
                     targetPose = trajectorySequence.getCurrentTrajectory().endPose();
@@ -86,13 +87,14 @@ public class TrajectorySequenceRunner {
                 trajectorySequence.getCurrentTrajectory().updateTargetPoint(poseEstimate);
                 trajectorySequence.updateGlobalTemporalMarkers();
 
-                motorPowers = endpointController.calculatePowers(poseEstimate, poseVelocity, poseAcceleration, trajectorySequence.getCurrentTrajectory().endPose());
+                motorPowers = endpointController.calculatePowers(poseEstimate, poseVelocity, trajectorySequence.getCurrentTrajectory().endPose());
 
-//                if (poseEstimate.minus(targetPose).inRange(trajectorySequence.getCurrentTrajectory().getEndError())) {
-//                    delayTime = Math.max(trajectorySequence.getCurrentTrajectory().getMinTime()-trajectoryTime.seconds(), trajectorySequence.getCurrentTrajectory().getEndDelay());
-//                    trajectoryTime.reset();
-//                    followState = FollowState.NEXT_TRAJECTORY_DELAY;
-//                }
+                //stops targeting endpoint if robot is close enough and has a low velocity
+                if (poseEstimate.minus(targetPose).inRange(trajectorySequence.getCurrentTrajectory().getEndError()) && poseVelocity.inRange(new Pose2d(.5, .5, .5))) {
+                    delayTime = Math.max(trajectorySequence.getCurrentTrajectory().getMinTime()-trajectoryTime.seconds(), trajectorySequence.getCurrentTrajectory().getEndDelay());
+                    trajectoryTime.reset();
+                    followState = FollowState.NEXT_TRAJECTORY_DELAY;
+                }
                 break;
             case NEXT_TRAJECTORY_DELAY:
 //                motorPowers = pidController.calculatePowers(poseEstimate, poseVelocity, poseAcceleration, targetPose, new Pose2d(0, 0 ,0));

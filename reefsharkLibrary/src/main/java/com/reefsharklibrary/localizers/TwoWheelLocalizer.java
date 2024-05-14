@@ -157,8 +157,10 @@ public class TwoWheelLocalizer implements Localizer {
 
     @Override
     public void setPoseEstimate(Pose2d pose) {
-        poseEstimate = pose;
         prevPositions.clear();
+        prevVelocities.clear();
+        prevVelocities.add(new TimePose2d(new Pose2d(0, 0, 0)));
+        poseEstimate = pose;
     }
 
     private void updatePoseVelocitiy() {
