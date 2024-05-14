@@ -102,6 +102,23 @@ public class Vector2d {
         return Math.abs(x)<vector.x && Math.abs(y) < vector.y;
     }
 
+    public boolean isFinite() {
+        return Double.isFinite(x) && Double.isFinite(y);
+    }
+
+    //throws and error if the vector contains non-finite numbers
+    public void enforceFinite() {
+        if (!isFinite()) {
+            throw new RuntimeException("Invalid vector:" + this);
+        }
+    }
+
+    public void enforceFinite(String string) {
+        if (!isFinite()) {
+            throw new RuntimeException(string);
+        }
+    }
+
     public String toString() {
         return String.format("x: %,3.2f y: %,3.2f", x, y);
     }

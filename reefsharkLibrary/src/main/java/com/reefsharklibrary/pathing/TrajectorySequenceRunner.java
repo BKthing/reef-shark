@@ -72,7 +72,7 @@ public class TrajectorySequenceRunner {
                 trajectorySequence.updateGlobalTemporalMarkers();
 
                 motorPowers = pidController.calculatePowers(poseEstimate, poseVelocity, poseAcceleration, trajectorySequence.getCurrentTrajectory().getTargetPose(), trajectorySequence.getCurrentTrajectory().getTargetMotionState());
-//
+
                 if (trajectorySequence.getCurrentTrajectory().targetEndpoint()) {//trajectorySequence.getCurrentTrajectory().targetEndpoint()
                     targetPose = trajectorySequence.getCurrentTrajectory().endPose();
                     followState = FollowState.TARGET_END_POINT;

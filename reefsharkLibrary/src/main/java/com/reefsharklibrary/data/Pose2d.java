@@ -71,6 +71,23 @@ public class Pose2d {
         return Math.abs(heading) < pose.heading && vector2d.isInRange(pose.getVector2d());
     }
 
+    public boolean isFinite() {
+        return Double.isFinite(heading) && vector2d.isFinite();
+    }
+
+    //throws and error if the pose contains non-finite numbers
+    public void enforceFinite() {
+        if (!isFinite()) {
+            throw new RuntimeException("Invalid pose:" + this);
+        }
+    }
+
+    public void enforceFinite(String string) {
+        if (!isFinite()) {
+            throw new RuntimeException(string);
+        }
+    }
+
     public String toString() {
         return vector2d.toString() + String.format(" heading: %,3.2f", heading*180/Math.PI);
     }

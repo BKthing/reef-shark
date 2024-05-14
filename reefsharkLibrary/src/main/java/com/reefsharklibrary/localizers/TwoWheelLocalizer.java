@@ -166,6 +166,7 @@ public class TwoWheelLocalizer implements Localizer {
     private void updatePoseVelocitiy() {
         if (prevPositions.size()<2) {
             prevVelocities.add(new TimePose2d(new Pose2d(0, 0, 0)));
+            return;
         }
 
         //looks for an index up to 4 reads ago
@@ -175,15 +176,12 @@ public class TwoWheelLocalizer implements Localizer {
         TimePose2d cur = prevPositions.get(prevPositions.size()-1);
 
         prevVelocities.add(new TimePose2d(cur.minus(old).scale((double) 1000/(cur.time-old.time)), (cur.time+old.time)/2));
-
     }
 
     @Override
     public Pose2d getPoseVelocity() {
         return prevVelocities.get(prevVelocities.size()-1);
     }
-
-
 
     @Override
     public Pose2d getPoseAcceleration() {

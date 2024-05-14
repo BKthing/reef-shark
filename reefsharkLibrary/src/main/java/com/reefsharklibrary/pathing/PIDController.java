@@ -36,8 +36,9 @@ public class PIDController {
 
         MotorPowers motorPowers = new MotorPowers();
 
-        motorPowers.addVector(updateLateralPID(new Vector2d(0, lateralDistanceComponent).rotate(headingVelDiff), new Vector2d(0, velocityComponent.getY()).rotate(headingVelDiff)));
+//        motorPowers.addVector(updateLateralPID(new Vector2d(0, lateralDistanceComponent).rotate(headingVelDiff), new Vector2d(0, velocityComponent.getY()).rotate(headingVelDiff)));
 
+        motorPowers.addVector(updateVelPID(new Vector2d(velocityComponent.getX(), 0).rotate(headingVelDiff), new Vector2d(forwardAccelComponent, 0).rotate(headingVelDiff)));
 
         //added in order of importance
 //        motorPowers.addHeading(updateHeadingPID(adjustedPoseCorrection.getHeading(), currentVelocity.getHeading()));
@@ -56,17 +57,18 @@ public class PIDController {
         lateralI = lateralI.plus(posDiff.multiply(lateralPID.getI()));
 
         return new Vector2d(
-                posDiff.getX()*lateralPID.getP() + lateralI.getX(),// + posVel.getX()*lateralPID.getD(),
-                posDiff.getY()*lateralPID.getP() + lateralI.getY()// + posVel.getY()*lateralPID.getD()
+                posDiff.getX()*lateralPID.getP() + lateralI.getX() + posVel.getX()*lateralPID.getD(),
+                posDiff.getY()*lateralPID.getP() + lateralI.getY() + posVel.getY()*lateralPID.getD()
         );
     };
 
     private Vector2d updateVelPID(Vector2d velDiff, Vector2d posAccel) {
         velI = velI.plus(velDiff.multiply(lateralPID.getI()));
 
+//        return new Vector2d(1, 1);
         return new Vector2d(
-                velDiff.getX()*lateralPID.getP() + lateralI.getX() + posAccel.getX()*lateralPID.getD(),
-                velDiff.getY()*lateralPID.getP() + lateralI.getY() + posAccel.getY()*lateralPID.getD()
+                velDiff.getX(),//*lateralPID.getkV() + velI.getX(),// + posAccel.getX()*lateralPID.getD(),
+                velDiff.getY()//*lateralPID.getkV() + velI.getY()// + posAccel.getY()*lateralPID.getD()
         );
     };
 
