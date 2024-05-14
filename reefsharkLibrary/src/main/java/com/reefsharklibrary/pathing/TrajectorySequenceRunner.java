@@ -43,7 +43,7 @@ public class TrajectorySequenceRunner {
     public TrajectorySequenceRunner(PIDCoeficients lateralPID, PIDCoeficients headingPID, Pose2d naturalDecel, double trackWidth) {
         this.lateralPID = lateralPID;
         this.headingPID = headingPID;
-        pidController = new PIDController(lateralPID, headingPID, trackWidth);
+        pidController = new PIDController(lateralPID, headingPID, trackWidth, .2);
         endpointController = new EndpointController(lateralPID, headingPID, naturalDecel);
     }
 
