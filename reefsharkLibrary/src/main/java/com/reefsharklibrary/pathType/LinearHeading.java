@@ -1,6 +1,7 @@
 package com.reefsharklibrary.pathType;
 
 import com.reefsharklibrary.data.Pose2d;
+import com.reefsharklibrary.data.Rotation;
 import com.reefsharklibrary.geometries.Geometry;
 
 import java.util.ArrayList;
@@ -22,12 +23,24 @@ public class LinearHeading implements Path {
     public List<Pose2d> generate(double resolution) {
         List<Pose2d> path = new ArrayList<>();
 
-        double heading = startHeading;
-        double headingInterval = (endHeading-startHeading)*resolution/geometry.getTotalDistance();
+        Rotation heading = new Rotation();
+
+        heading.set(startHeading);
+
+        double headingInterval = Rotation.inRange(endHeading-startHeading, Math.PI, -Math.PI)*(resolution/geometry.getTotalDistance());
+
+        if (!Double.isFinite(headingInterval)) {
+            throw new RuntimeException("Non finite heading interval");
+        }
+
 
         for (double i = 0; i < geometry.getTotalDistance()-resolution; i += resolution) {
-            path.add(geometry.getPoint(i).toPose(heading));
-            heading += headingInterval;
+            if (!Double.isFinite(heading.get())) {
+                throw new RuntimeException("Non finite heading");
+            }
+
+            path.add(geometry.getPoint(i).toPose(heading.get()));
+            heading.add(headingInterval);
         }
 
         path.add(geometry.endPoint().toPose(endHeading));

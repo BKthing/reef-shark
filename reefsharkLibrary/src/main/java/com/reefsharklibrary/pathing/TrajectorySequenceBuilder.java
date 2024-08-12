@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class TrajectorySequenceBuilder {
-    private final double resolution = .15;
+    private final double resolution = .1;
 
     private boolean firstTrajectory = true;
 

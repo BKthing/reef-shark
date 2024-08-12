@@ -7,6 +7,10 @@ public class Rotation {
     private final double upperBound;
     private final double range;
 
+    public Rotation() {
+        this(0, 2*Math.PI);
+    }
+
     public Rotation(double lowerBound, double upperBound) {
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
@@ -20,6 +24,22 @@ public class Rotation {
     private double inRange(double rotation) {
         if (rotation>=upperBound) {
              do {
+                rotation -= range;
+            } while (rotation>=upperBound);
+        } else {
+            while (rotation < lowerBound) {
+                rotation += range;
+            }
+        }
+
+        return rotation;
+    }
+
+    public static double inRange(double rotation, double upperBound, double lowerBound) {
+        double range = Math.abs(upperBound-lowerBound);
+
+        if (rotation>=upperBound) {
+            do {
                 rotation -= range;
             } while (rotation>=upperBound);
         } else {

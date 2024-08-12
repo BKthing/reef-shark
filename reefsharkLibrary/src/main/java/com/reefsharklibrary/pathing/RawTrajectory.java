@@ -2,6 +2,7 @@ package com.reefsharklibrary.pathing;
 
 import com.reefsharklibrary.data.ConstraintSet;
 import com.reefsharklibrary.data.Pose2d;
+import com.reefsharklibrary.data.Rotation;
 import com.reefsharklibrary.data.Vector2d;
 import com.reefsharklibrary.pathing.data.IndexCallMarker;
 import com.reefsharklibrary.pathing.data.TemporalCallMarker;
@@ -117,7 +118,10 @@ public class RawTrajectory implements RawTrajectoryInterface {
             indexCallMarkers(resolution);
         }
 
-        return new Trajectory(positions, calculateVelocities(constraints, resolution), callMarkers, temporalCallMarkers, followError, endError, endDelay, minTime, positions.size()- 1 - (int) (targetEndDistance/resolution));
+        VelocityFinder velocityFinder = new VelocityFinder(positions, constraints);
+
+                //calculateVelocities(constraints, resolution)
+        return new Trajectory(positions, velocityFinder.getVelocities(), callMarkers, temporalCallMarkers, followError, endError, endDelay, minTime, positions.size()- 1 - (int) (targetEndDistance/resolution));
     }
 
     private void sortTemporalMarkers() {
@@ -156,16 +160,16 @@ public class RawTrajectory implements RawTrajectoryInterface {
 
         boolean decelerating = true;
 
-//        while (decelerating) {
-//            prevVelocities = findDecelVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, positions.get(i).getHeading(), constraints);
-//
-//            if (poseLessThanOrEqual(velocities.get(i-1), prevVelocities) || i<2) {
-//                decelerating = false;
-//            } else {
-//                velocities.set(i-1, prevVelocities);
-//                i--;
-//            }
-//        }
+        while (decelerating) {
+            prevVelocities = findDecelVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, positions.get(i).getHeading(), constraints);
+
+            if (poseLessThanOrEqual(velocities.get(i-1), prevVelocities) || i<2) {
+                decelerating = false;
+            } else {
+                velocities.set(i-1, prevVelocities);
+                i--;
+            }
+        }
 
         return velocities;
     }
@@ -187,9 +191,11 @@ public class RawTrajectory implements RawTrajectoryInterface {
         double headingLinearVel = Math.abs(constraints.radiansToLinearVel()*difference.getHeading());
         double averageHeading = heading-difference.getHeading()/2;
 
+        double relRotation = Rotation.inRange(direction-averageHeading, 2*Math.PI, 0);
+
         //finds how much power the mecanum drive can exert in the given direction relative to its current heading
-        double maxVel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearVel(), direction-averageHeading).getMagnitude()-headingLinearVel;
-        double maxAccel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearAccel(), direction-averageHeading).getMagnitude()-headingLinearVel;
+        double maxVel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearVel(), relRotation).getMagnitude();//-headingLinearVel;
+        double maxAccel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearAccel(), relRotation).getMagnitude();//-headingLinearVel;
 
         double achievableVelocity = Math.sqrt(Math.pow(initialVelocity, 2) + 2*maxAccel*distance);
 
@@ -212,13 +218,22 @@ public class RawTrajectory implements RawTrajectoryInterface {
             time = difference.getHeading()/maxHeadingVel;
         }
 
+        if (time == 0) throw new RuntimeException("Time of 0");
+
+
+
         //divides the change in position by the change in time to give the velocity
-        return difference.scale(1/time);
+        Pose2d velocity = difference.scale(1/time);
+        velocity.enforceFinite();
+
+        return velocity;
     }
 
     private Pose2d findDecelVelocities(Pose2d difference, Pose2d prevVelocities, double heading, ConstraintSet constraints) {
+        difference.enforceFinite();
         double direction = difference.getDirection();
-        double initialVelocity = prevVelocities.getVector2d().rotate(-direction).getX();
+        Vector2d initialVelocities = prevVelocities.getVector2d().rotate(-direction);
+        double initialVelocity = initialVelocities.getX();
         double distance = difference.getVector2d().getMagnitude();
 
         //how much linear velocity the wheels have to exert to turn
@@ -226,18 +241,26 @@ public class RawTrajectory implements RawTrajectoryInterface {
         double averageHeading = heading-difference.getHeading()/2;
 
         //finds how much power the mecanum drive can exert in the given direction relative to its current heading
-        double maxVel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearVel(), direction-averageHeading).getMagnitude()-headingLinearVel;
-        double maxAccel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearDecel(), direction-averageHeading).getMagnitude()-headingLinearVel;
+        double relRotation = Rotation.inRange(direction-averageHeading, 2*Math.PI, 0);
+        double maxVel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearVel(), relRotation).getMagnitude();//-headingLinearVel;
+        double maxAccel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearDecel(), relRotation).getMagnitude();//-headingLinearVel;
+
+        if (maxAccel == 0) throw new RuntimeException("maxAccel 0");
 
         double achievableVelocity = Math.sqrt(Math.pow(initialVelocity, 2) + 2*maxAccel*distance);
+
+        if (!Double.isFinite(achievableVelocity)) throw new RuntimeException("Non finite achievable vel " + initialVelocity + " " + maxAccel + " " + distance);
 
         double time;
 
         if (achievableVelocity>maxVel) {
             //TODO: find a better time estimate for when maxVel is greater than achievableVel
             time = distance/maxVel;
+            if (!Double.isFinite(time)) throw new RuntimeException("Non finite time " + time);
+
         } else {
             time = (achievableVelocity-initialVelocity)/maxAccel;
+            if (!Double.isFinite(time)) throw new RuntimeException("Non finite time " + time);
         }
 
         double headingVel = difference.getHeading()/time;

@@ -90,7 +90,9 @@ public class Vector2d {
     }
 
     public Vector2d rotate(double radians) {
-        return new Vector2d(x*Math.cos(radians)-y*Math.sin(radians), x*Math.sin(radians)+y*Math.cos(radians));
+        double cos = Math.cos(radians);
+        double sin = Math.sin(radians);
+        return new Vector2d(x*cos-y*sin, x*sin+y*cos);
     }
 
     //used to determine how close the robot is to a point
@@ -100,6 +102,27 @@ public class Vector2d {
 
     public boolean isInRange(Vector2d vector) {
         return Math.abs(x)<vector.x && Math.abs(y) < vector.y;
+    }
+
+    //returns 0 if it is not in a quadrant
+    public int getQuadrant() {
+        if (x == 0 || y == 0) {
+            return 0;
+        }
+
+        if (x>0) {
+            if (y>0) {
+                return 1;
+            } else {
+                return 4;
+            }
+        } else {
+            if (y>0) {
+                return 2;
+            } else {
+                return 3;
+            }
+        }
     }
 
     public boolean isFinite() {

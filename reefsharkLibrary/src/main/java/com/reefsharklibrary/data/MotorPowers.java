@@ -96,6 +96,7 @@ public class MotorPowers {
     public void addVector(Vector2d vector) {
         double remainingPower = getRemainingPower();
         double totalPower = Math.abs(vector.getY())+Math.abs(vector.getX());
+
         if (totalPower>remainingPower) {
             vector = vector.scale(remainingPower/totalPower);
         }
@@ -134,7 +135,7 @@ public class MotorPowers {
 
     private void checkNaN() {
         if (!Double.isFinite(motorPowers.get(0)) || !Double.isFinite(motorPowers.get(1)) || !Double.isFinite(motorPowers.get(2)) || !Double.isFinite(motorPowers.get(3))) {
-            throw new RuntimeException("Non Finite Motor Powers");
+            throw new RuntimeException("Non Finite Motor Powers " + motorPowers);
         }
     }
 

@@ -1,6 +1,7 @@
 package com.reefsharklibrary.pathType;
 
 import com.reefsharklibrary.data.Pose2d;
+import com.reefsharklibrary.data.Rotation;
 import com.reefsharklibrary.geometries.Geometry;
 
 import java.util.ArrayList;
@@ -22,14 +23,17 @@ public class SplineHeading implements Path {
     public List<Pose2d> generate(double resolution) {
         List<Pose2d> path = new ArrayList<>();
 
-        double heading = startHeading-geometry.tangentAngle(0);
-        double headingInterval = (endHeading-startHeading+geometry.tangentAngle(0)-geometry.tangentAngle(geometry.getTotalDistance()))*resolution/geometry.getTotalDistance();
+        Rotation heading = new Rotation();
+        heading.set(startHeading-geometry.tangentAngle(0));
+
+        double headingInterval = Rotation.inRange(endHeading-startHeading+geometry.tangentAngle(0)-geometry.tangentAngle(geometry.getTotalDistance()), Math.PI, -Math.PI)*(resolution/geometry.getTotalDistance());
+
 //(endHeading-geometry.tangentAngle(geometry.getTotalDistance()))-(startHeading-geometry.tangentAngle(0))
 
         for (double i = 0; i < geometry.getTotalDistance()-resolution; i += resolution) {
-            path.add(geometry.getPoint(i).toPose(geometry.tangentAngle(i)+heading));
+            path.add(geometry.getPoint(i).toPose(geometry.tangentAngle(i)+heading.get()));
 
-            heading += headingInterval;
+            heading.add(headingInterval);
         }
 
         path.add(geometry.endPoint().toPose(endHeading));

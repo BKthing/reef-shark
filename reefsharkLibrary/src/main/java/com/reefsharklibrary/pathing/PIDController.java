@@ -38,6 +38,13 @@ public class PIDController {
 
     //TODO: possibly change it to rotate vector, apply pid and then un-rotate so that its faster
     public MotorPowers calculatePowers(Pose2d currentPose, Pose2d currentVelocity, Pose2d currentAcceleration, Pose2d targetPose, Pose2d targetMotionState) {
+//        currentPose.enforceFinite();
+//        currentVelocity.enforceFinite();
+//        currentAcceleration.enforceFinite();
+//        targetPose.enforceFinite();
+//        targetMotionState.enforceFinite();
+
+
         double velAngle = targetMotionState.getDirection();
         double headingVelDiff = currentPose.getHeading()-velAngle;
 
