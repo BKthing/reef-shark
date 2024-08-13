@@ -67,6 +67,14 @@ public class Pose2d {
         return vector2d.sqrt().toPose(Math.sqrt(heading));
     }
 
+    public Pose2d minimizeHeading() {
+        return vector2d.toPose(Rotation.inRange(heading, Math.PI, -Math.PI));
+    }
+
+    public Pose2d minimizeHeading(double max, double min) {
+        return vector2d.toPose(Rotation.inRange(heading, max, min));
+    }
+
     public  boolean inRange(Pose2d pose) {
         return Math.abs(heading) < pose.heading && vector2d.isInRange(pose.getVector2d());
     }

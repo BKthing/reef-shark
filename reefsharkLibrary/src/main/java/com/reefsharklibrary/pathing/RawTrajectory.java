@@ -118,10 +118,10 @@ public class RawTrajectory implements RawTrajectoryInterface {
             indexCallMarkers(resolution);
         }
 
-        VelocityFinder velocityFinder = new VelocityFinder(positions, constraints);
+        MecanumVelocityFinder mecanumVelocityFinder = new MecanumVelocityFinder(positions, constraints);
 
                 //calculateVelocities(constraints, resolution)
-        return new Trajectory(positions, velocityFinder.getVelocities(), callMarkers, temporalCallMarkers, followError, endError, endDelay, minTime, positions.size()- 1 - (int) (targetEndDistance/resolution));
+        return new Trajectory(positions, mecanumVelocityFinder.getVelocities(), callMarkers, temporalCallMarkers, followError, endError, endDelay, minTime, positions.size()- 1 - (int) (targetEndDistance/resolution));
     }
 
     private void sortTemporalMarkers() {
@@ -188,7 +188,7 @@ public class RawTrajectory implements RawTrajectoryInterface {
         double distance = difference.getVector2d().getMagnitude();
 
         //how much linear velocity the wheels have to exert to turn
-        double headingLinearVel = Math.abs(constraints.radiansToLinearVel()*difference.getHeading());
+        double headingLinearVel = Math.abs(constraints.getWheelBaseRadius()*difference.getHeading());
         double averageHeading = heading-difference.getHeading()/2;
 
         double relRotation = Rotation.inRange(direction-averageHeading, 2*Math.PI, 0);
@@ -237,7 +237,7 @@ public class RawTrajectory implements RawTrajectoryInterface {
         double distance = difference.getVector2d().getMagnitude();
 
         //how much linear velocity the wheels have to exert to turn
-        double headingLinearVel = Math.abs(constraints.radiansToLinearVel()*difference.getHeading());
+        double headingLinearVel = Math.abs(constraints.getWheelBaseRadius()*difference.getHeading());
         double averageHeading = heading-difference.getHeading()/2;
 
         //finds how much power the mecanum drive can exert in the given direction relative to its current heading
