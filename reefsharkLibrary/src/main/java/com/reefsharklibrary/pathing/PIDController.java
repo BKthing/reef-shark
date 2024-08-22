@@ -48,16 +48,18 @@ public class PIDController {
         double velAngle = targetMotionState.getDirection();
         double headingVelDiff = currentPose.getHeading()-velAngle;
 
-        double lateralDistanceComponent = targetPose.getVector2d().minus(currentPose.getVector2d()).rotate(velAngle).getY();
+        double lateralDistanceComponent = targetPose.getVector2d().minus(currentPose.getVector2d()).rotate(-velAngle).getY();
         Vector2d velocityComponent = targetMotionState.getVector2d().minus(currentVelocity.getVector2d()).rotate(velAngle);
         double forwardAccelComponent = currentAcceleration.getVector2d().rotate(velAngle).getX();
 
         MotorPowers motorPowers = new MotorPowers();
 
+        motorPowers.addVector(new Vector2d(Math.toDegrees(velAngle)/10, 0));
+
         //added in order of importance
-        motorPowers.addHeading(updateHeadingPID(targetPose.getHeading()-currentPose.getHeading(), currentVelocity.getHeading()));
-        motorPowers.addVector(updateLateralPID(new Vector2d(0, lateralDistanceComponent).rotate(headingVelDiff), new Vector2d(0, velocityComponent.getY()).rotate(headingVelDiff)).scale(lateralComponentScalar));
-        motorPowers.addVector(updateVelPID(new Vector2d(velocityComponent.getX(), 0).rotate(headingVelDiff), new Vector2d(forwardAccelComponent, 0).rotate(headingVelDiff)));
+//        motorPowers.addHeading(updateHeadingPID(targetPose.getHeading()-currentPose.getHeading(), currentVelocity.getHeading()));
+//        motorPowers.addVector(updateLateralPID(new Vector2d(0, lateralDistanceComponent).rotate(-currentPose.getHeading()), new Vector2d(0, velocityComponent.getY()).rotate(-currentPose.getHeading())).scale(lateralComponentScalar));
+//        motorPowers.addVector(updateVelPID(new Vector2d(velocityComponent.getX(), 0).rotate(headingVelDiff), new Vector2d(forwardAccelComponent, 0).rotate(headingVelDiff)));
 
         return motorPowers;
     }
