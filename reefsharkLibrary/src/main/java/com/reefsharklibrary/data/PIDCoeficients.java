@@ -7,6 +7,7 @@ public final class PIDCoeficients {
     private final double p;
     private final double i;
     private final double d;
+    private final double kP;
     private final double kV;
     private final double kA;
 
@@ -19,10 +20,11 @@ public final class PIDCoeficients {
      * @param d derivative
      */
 
-    public PIDCoeficients(double p, double i, double d, double kV, double kA) {
+    public PIDCoeficients(double p, double i, double d, double kP, double kV, double kA) {
         this.p = p;
         this.i = i;
         this.d = d;
+        this.kP = kP;
         this.kV = kV;
         this.kA = kA;
     }
@@ -31,6 +33,7 @@ public final class PIDCoeficients {
         this.p = p;
         this.i = i;
         this.d = d;
+        this.kP = 0;
 
         //got these default values from roadrunner, hopefully their good
         this.kV = .0128;
@@ -56,6 +59,10 @@ public final class PIDCoeficients {
      * */
     public double getD() {
         return d;
+    }
+
+    public double getkP() {
+        return kP;
     }
 
     /**

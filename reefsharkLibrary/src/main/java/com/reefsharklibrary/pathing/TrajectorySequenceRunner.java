@@ -1,5 +1,6 @@
 package com.reefsharklibrary.pathing;
 
+import com.reefsharklibrary.data.ConstraintSet;
 import com.reefsharklibrary.data.MotorPowers;
 import com.reefsharklibrary.data.PIDCoeficients;
 import com.reefsharklibrary.data.Pose2d;
@@ -32,6 +33,8 @@ public class TrajectorySequenceRunner {
 
     private final EndpointController endpointController;
 
+    private final ConstraintSet constraintSet;
+
     private MotorPowers lastMotorPowers = new MotorPowers();
 
     private final ElapsedTimer trajectoryTime = new ElapsedTimer();
@@ -41,11 +44,12 @@ public class TrajectorySequenceRunner {
 
 
 
-    public TrajectorySequenceRunner(PIDCoeficients lateralPID, PIDCoeficients headingPID, Pose2d naturalDecel, double trackWidth) {
+    public TrajectorySequenceRunner(PIDCoeficients lateralPID, PIDCoeficients headingPID, Pose2d naturalDecel, double trackWidth, ConstraintSet constraintSet) {
         this.lateralPID = lateralPID;
         this.headingPID = headingPID;
-        pidController = new PIDController(lateralPID, headingPID, trackWidth, .2);
+        pidController = new PIDController(lateralPID, headingPID, trackWidth, constraintSet.getLateralComponentScalar());
         endpointController = new EndpointController(lateralPID, headingPID, naturalDecel);
+        this.constraintSet = constraintSet;
     }
 
     public void followTrajectorySequence(TrajectorySequence trajectorySequence) {
@@ -66,17 +70,20 @@ public class TrajectorySequenceRunner {
         }
 
         MotorPowers motorPowers = new MotorPowers();
+        motorPowers.setStrafeScalar(constraintSet.getStrafeScalar());
 
         switch (followState) {
             case FOLLOW_TRAJECTORY:
                 trajectorySequence.getCurrentTrajectory().updateTargetPoint(poseEstimate);
                 trajectorySequence.updateGlobalTemporalMarkers();
 
-                motorPowers = pidController.calculatePowers(poseEstimate, poseVelocity, poseAcceleration, trajectorySequence.getCurrentTrajectory().getTargetPose(), trajectorySequence.getCurrentTrajectory().getTargetMotionState());
+                 pidController.calculatePowers(poseEstimate, poseVelocity, poseAcceleration, trajectorySequence.getCurrentTrajectory().getTargetPose(), trajectorySequence.getCurrentTrajectory().getTargetMotionState(), motorPowers);
 
                 if (trajectorySequence.getCurrentTrajectory().targetEndpoint()) {//trajectorySequence.getCurrentTrajectory().targetEndpoint()
                     targetPose = trajectorySequence.getCurrentTrajectory().endPose();
-                    followState = FollowState.TARGET_END_POINT;
+                    followState = FollowState.NO_TRAJECTORY;
+
+//                    followState = FollowState.TARGET_END_POINT;
                 }
 
                 break;
@@ -88,7 +95,7 @@ public class TrajectorySequenceRunner {
                 trajectorySequence.getCurrentTrajectory().updateTargetPoint(poseEstimate);
                 trajectorySequence.updateGlobalTemporalMarkers();
 
-                motorPowers = endpointController.calculatePowers(poseEstimate, poseVelocity, trajectorySequence.getCurrentTrajectory().endPose());
+                 endpointController.calculatePowers(poseEstimate, poseVelocity, trajectorySequence.getCurrentTrajectory().endPose(), motorPowers);
 
                 //stops targeting endpoint if robot is close enough and has a low velocity
                 if (poseEstimate.minus(targetPose).inRange(trajectorySequence.getCurrentTrajectory().getEndError()) && poseVelocity.inRange(new Pose2d(.5, .5, .5))) {

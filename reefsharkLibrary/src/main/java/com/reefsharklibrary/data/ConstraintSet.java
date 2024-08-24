@@ -14,19 +14,31 @@ public class ConstraintSet {
 
     private final double wheelBaseRadius;
 
+    private final double strafeScalar;
+
+    private final double lateralComponentScalar;
 
 
 
 
-    public ConstraintSet(PIDCoeficients lateralPID, PIDCoeficients headingPID, VelConstraint velConstraint, AngVelConstraint angVelConstraint, Pose2d naturalDecel, double wheelBaseRadius) {
+    public ConstraintSet(PIDCoeficients lateralPID, PIDCoeficients headingPID, VelConstraint velConstraint, AngVelConstraint angVelConstraint, Pose2d naturalDecel, double wheelBaseRadius, double strafeScalar, double lateralComponentScalar) {
         this.angVelConstraint = angVelConstraint;
         this.velConstraint = velConstraint;
         this.naturalDecel = naturalDecel;
         this.lateralPID = lateralPID;
         this.headingPID = headingPID;
         this.wheelBaseRadius = wheelBaseRadius;
+        this.strafeScalar = strafeScalar;
+        this.lateralComponentScalar = lateralComponentScalar;
     }
 
+    public double getStrafeScalar() {
+        return strafeScalar;
+    }
+
+    public double getLateralComponentScalar() {
+        return lateralComponentScalar;
+    }
     /*
     * Returns a vector with the achievable forward and strafe values of the robot at a certain heading
     * given the max forward and strafe values

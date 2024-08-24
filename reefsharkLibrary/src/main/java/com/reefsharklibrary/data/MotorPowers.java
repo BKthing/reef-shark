@@ -10,6 +10,12 @@ public class MotorPowers {
     private final List<Double> motorPowers = Arrays.asList(0.0, 0.0, 0.0, 0.0);
     private final double nominalPower = 12;
 
+    private double strafeScalar = 1.1;
+
+    public void setStrafeScalar(double strafeScalar) {
+        this.strafeScalar = strafeScalar;
+    }
+
     public List<Double> getNormalizedVoltages(double voltage) {
         List<Double> normalizedMotorPowers = new ArrayList<>();
         double normalizeVal = nominalPower/voltage;
@@ -83,7 +89,7 @@ public class MotorPowers {
     }
 
     public void addY(double y) {
-        double scaledY = getScaledPower(y);
+        double scaledY = getScaledPower(y*strafeScalar);
 
         add(0, -scaledY);
         add(1, scaledY);
@@ -94,6 +100,8 @@ public class MotorPowers {
     }
 
     public void addVector(Vector2d vector) {
+        vector = new Vector2d(vector.getX(), vector.getY()*strafeScalar);
+
         double remainingPower = getRemainingPower();
         double totalPower = Math.abs(vector.getY())+Math.abs(vector.getX());
 
@@ -115,6 +123,7 @@ public class MotorPowers {
     }
 
     public void evenlyAddPowers(Pose2d pose) {
+        pose = new Pose2d(pose.getX(), pose.getY()*strafeScalar, pose.getHeading());
         double remainingPower = getRemainingPower();
         double totalPower = Math.abs(pose.getY())+Math.abs(pose.getX()+Math.abs(pose.getHeading()));
         if (totalPower>remainingPower) {

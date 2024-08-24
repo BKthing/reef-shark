@@ -14,7 +14,7 @@ import java.util.function.Function;
 
 public class EndpointController {
 
-    private final MotorPowers drivePower = new MotorPowers();
+    private MotorPowers prevDrivePower = new MotorPowers();
 
     private final PIDCoeficients lateralPID;
     private final PIDCoeficients headingPID;
@@ -37,7 +37,7 @@ public class EndpointController {
         }
     }
 
-    public MotorPowers calculatePowers(Pose2d currentPose, Pose2d currentVelocity, Pose2d targetPose) {
+    public void calculatePowers(Pose2d currentPose, Pose2d currentVelocity, Pose2d targetPose, MotorPowers drivePower) {
         drivePower.reset();
 
         estimatedEndPos = new TimePose2d(estimateEndPos(currentPose, currentVelocity));
@@ -45,12 +45,11 @@ public class EndpointController {
 
         drivePower.orderedAddPowers(findCorrectivePowers(targetPose.minus(estimatedEndPos).rotateVector(currentPose.getHeading()), getPoseVelocitiy().rotateVector(currentPose.getHeading())));
 
-
-        return drivePower;
+        prevDrivePower = drivePower;
     }
 
     public MotorPowers getLastMotorPower() {
-        return drivePower;
+        return prevDrivePower;
     }
 
     //finds motor powers to move the end point closer to the target point
