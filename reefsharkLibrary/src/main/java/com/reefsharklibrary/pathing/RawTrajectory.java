@@ -143,140 +143,140 @@ public class RawTrajectory implements RawTrajectoryInterface {
 
 
     //TODO: fix this
-    private List<Pose2d> calculateVelocities(ConstraintSet constraints, double resolution) {
-        List<Pose2d> velocities = new ArrayList<>();
-
-        Pose2d prevVelocities = new Pose2d(0, 0, 0);
-
-        for (int i = 0; i<positions.size()-1; i++){
-            prevVelocities = findVelocities(positions.get(i+1).minus(positions.get(i)), prevVelocities, positions.get(i+1).getHeading(), constraints);
-            velocities.add(prevVelocities);
-        }
-
-        velocities.add(new Pose2d(0, 0, 0));
-        prevVelocities = new Pose2d(0, 0, 0);
-
-        int i = velocities.size()-1;
-
-        boolean decelerating = true;
-
-        while (decelerating) {
-            prevVelocities = findDecelVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, positions.get(i).getHeading(), constraints);
-
-            if (poseLessThanOrEqual(velocities.get(i-1), prevVelocities) || i<2) {
-                decelerating = false;
-            } else {
-                velocities.set(i-1, prevVelocities);
-                i--;
-            }
-        }
-
-        return velocities;
-    }
-
-    private boolean poseLessThanOrEqual(Pose2d pose1, Pose2d pose2) {
-        return Math.abs(pose1.getX())<=Math.abs(pose2.getX()) && Math.abs(pose1.getY())<=Math.abs(pose2.getY());// && pose1.getHeading()<pose2.getHeading()
-    }
-
-    //this is currently a bad estimate at velocity that doesn't take into account a lot of important factors
-    //TODO: take into consideration how much force it takes to change the direction of velocity so that tight turns will work
-    private Pose2d findVelocities(Pose2d difference, Pose2d prevVelocities, double heading, ConstraintSet constraints) {
-
-        double direction = difference.getDirection();
-        Vector2d initialVelocities = prevVelocities.getVector2d().rotate(-direction);
-        double initialVelocity = initialVelocities.getX();
-        double distance = difference.getVector2d().getMagnitude();
-
-        //how much linear velocity the wheels have to exert to turn
-        double headingLinearVel = Math.abs(constraints.getWheelBaseRadius()*difference.getHeading());
-        double averageHeading = heading-difference.getHeading()/2;
-
-        double relRotation = Rotation.inRange(direction-averageHeading, 2*Math.PI, 0);
-
-        //finds how much power the mecanum drive can exert in the given direction relative to its current heading
-        double maxVel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearVel(), relRotation).getMagnitude();//-headingLinearVel;
-        double maxAccel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearAccel(), relRotation).getMagnitude();//-headingLinearVel;
-
-        double achievableVelocity = Math.sqrt(Math.pow(initialVelocity, 2) + 2*maxAccel*distance);
-
-        double time;
-
-        if (achievableVelocity>maxVel) {
-            time = distance/maxVel;
-        } else {
-            time = (achievableVelocity-initialVelocity)/maxAccel;
-        }
-
-        double headingVel = difference.getHeading()/time;
-
-        double maxHeadingVel = Math.min(
-                Math.sqrt(Math.pow(prevVelocities.getHeading(), 2)+2*constraints.getMaxAngularAccel()*difference.getHeading()),
-                constraints.getMaxAngularVel()
-            );
-
-        if (headingVel>maxHeadingVel) {
-            time = difference.getHeading()/maxHeadingVel;
-        }
-
-        if (time == 0) throw new RuntimeException("Time of 0");
-
-
-
-        //divides the change in position by the change in time to give the velocity
-        Pose2d velocity = difference.scale(1/time);
-        velocity.enforceFinite();
-
-        return velocity;
-    }
-
-    private Pose2d findDecelVelocities(Pose2d difference, Pose2d prevVelocities, double heading, ConstraintSet constraints) {
-        difference.enforceFinite();
-        double direction = difference.getDirection();
-        Vector2d initialVelocities = prevVelocities.getVector2d().rotate(-direction);
-        double initialVelocity = initialVelocities.getX();
-        double distance = difference.getVector2d().getMagnitude();
-
-        //how much linear velocity the wheels have to exert to turn
-        double headingLinearVel = Math.abs(constraints.getWheelBaseRadius()*difference.getHeading());
-        double averageHeading = heading-difference.getHeading()/2;
-
-        //finds how much power the mecanum drive can exert in the given direction relative to its current heading
-        double relRotation = Rotation.inRange(direction-averageHeading, 2*Math.PI, 0);
-        double maxVel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearVel(), relRotation).getMagnitude();//-headingLinearVel;
-        double maxAccel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearDecel(), relRotation).getMagnitude();//-headingLinearVel;
-
-        if (maxAccel == 0) throw new RuntimeException("maxAccel 0");
-
-        double achievableVelocity = Math.sqrt(Math.pow(initialVelocity, 2) + 2*maxAccel*distance);
-
-        if (!Double.isFinite(achievableVelocity)) throw new RuntimeException("Non finite achievable vel " + initialVelocity + " " + maxAccel + " " + distance);
-
-        double time;
-
-        if (achievableVelocity>maxVel) {
-            //TODO: find a better time estimate for when maxVel is greater than achievableVel
-            time = distance/maxVel;
-            if (!Double.isFinite(time)) throw new RuntimeException("Non finite time " + time);
-
-        } else {
-            time = (achievableVelocity-initialVelocity)/maxAccel;
-            if (!Double.isFinite(time)) throw new RuntimeException("Non finite time " + time);
-        }
-
-        double headingVel = difference.getHeading()/time;
-
-        double maxHeadingVel = Math.min(
-                Math.sqrt(Math.pow(prevVelocities.getHeading(), 2)+2*constraints.getMaxAngularDecel()*difference.getHeading()),
-                constraints.getMaxAngularVel()
-        );
-
-        if (headingVel>maxHeadingVel) {
-            time = difference.getHeading()/maxHeadingVel;
-        }
-
-        //divides the change in position by the change in time to give the velocity
-        return difference.scale(1/time);
-    }
+//    private List<Pose2d> calculateVelocities(ConstraintSet constraints, double resolution) {
+//        List<Pose2d> velocities = new ArrayList<>();
+//
+//        Pose2d prevVelocities = new Pose2d(0, 0, 0);
+//
+//        for (int i = 0; i<positions.size()-1; i++){
+//            prevVelocities = findVelocities(positions.get(i+1).minus(positions.get(i)), prevVelocities, positions.get(i+1).getHeading(), constraints);
+//            velocities.add(prevVelocities);
+//        }
+//
+//        velocities.add(new Pose2d(0, 0, 0));
+//        prevVelocities = new Pose2d(0, 0, 0);
+//
+//        int i = velocities.size()-1;
+//
+//        boolean decelerating = true;
+//
+//        while (decelerating) {
+//            prevVelocities = findDecelVelocities(positions.get(i).minus(positions.get(i-1)), prevVelocities, positions.get(i).getHeading(), constraints);
+//
+//            if (poseLessThanOrEqual(velocities.get(i-1), prevVelocities) || i<2) {
+//                decelerating = false;
+//            } else {
+//                velocities.set(i-1, prevVelocities);
+//                i--;
+//            }
+//        }
+//
+//        return velocities;
+//    }
+//
+//    private boolean poseLessThanOrEqual(Pose2d pose1, Pose2d pose2) {
+//        return Math.abs(pose1.getX())<=Math.abs(pose2.getX()) && Math.abs(pose1.getY())<=Math.abs(pose2.getY());// && pose1.getHeading()<pose2.getHeading()
+//    }
+//
+//    //this is currently a bad estimate at velocity that doesn't take into account a lot of important factors
+//    //TODO: take into consideration how much force it takes to change the direction of velocity so that tight turns will work
+//    private Pose2d findVelocities(Pose2d difference, Pose2d prevVelocities, double heading, ConstraintSet constraints) {
+//
+//        double direction = difference.getDirection();
+//        Vector2d initialVelocities = prevVelocities.getVector2d().rotate(-direction);
+//        double initialVelocity = initialVelocities.getX();
+//        double distance = difference.getVector2d().getMagnitude();
+//
+//        //how much linear velocity the wheels have to exert to turn
+//        double headingLinearVel = Math.abs(constraints.getWheelBaseRadius()*difference.getHeading());
+//        double averageHeading = heading-difference.getHeading()/2;
+//
+//        double relRotation = Rotation.inRange(direction-averageHeading, 2*Math.PI, 0);
+//
+//        //finds how much power the mecanum drive can exert in the given direction relative to its current heading
+//        double maxVel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearVel(), relRotation).getMagnitude();//-headingLinearVel;
+//        double maxAccel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearAccel(), relRotation).getMagnitude();//-headingLinearVel;
+//
+//        double achievableVelocity = Math.sqrt(Math.pow(initialVelocity, 2) + 2*maxAccel*distance);
+//
+//        double time;
+//
+//        if (achievableVelocity>maxVel) {
+//            time = distance/maxVel;
+//        } else {
+//            time = (achievableVelocity-initialVelocity)/maxAccel;
+//        }
+//
+//        double headingVel = difference.getHeading()/time;
+//
+//        double maxHeadingVel = Math.min(
+//                Math.sqrt(Math.pow(prevVelocities.getHeading(), 2)+2*constraints.getMaxAngularAccel()*difference.getHeading()),
+//                constraints.getMaxAngularVel()
+//            );
+//
+//        if (headingVel>maxHeadingVel) {
+//            time = difference.getHeading()/maxHeadingVel;
+//        }
+//
+//        if (time == 0) throw new RuntimeException("Time of 0");
+//
+//
+//
+//        //divides the change in position by the change in time to give the velocity
+//        Pose2d velocity = difference.scale(1/time);
+//        velocity.enforceFinite();
+//
+//        return velocity;
+//    }
+//
+//    private Pose2d findDecelVelocities(Pose2d difference, Pose2d prevVelocities, double heading, ConstraintSet constraints) {
+//        difference.enforceFinite();
+//        double direction = difference.getDirection();
+//        Vector2d initialVelocities = prevVelocities.getVector2d().rotate(-direction);
+//        double initialVelocity = initialVelocities.getX();
+//        double distance = difference.getVector2d().getMagnitude();
+//
+//        //how much linear velocity the wheels have to exert to turn
+//        double headingLinearVel = Math.abs(constraints.getWheelBaseRadius()*difference.getHeading());
+//        double averageHeading = heading-difference.getHeading()/2;
+//
+//        //finds how much power the mecanum drive can exert in the given direction relative to its current heading
+//        double relRotation = Rotation.inRange(direction-averageHeading, 2*Math.PI, 0);
+//        double maxVel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearVel(), relRotation).getMagnitude();//-headingLinearVel;
+//        double maxAccel = ConstraintSet.getAdjustedMecanumVector(constraints.getMaxLinearDecel(), relRotation).getMagnitude();//-headingLinearVel;
+//
+//        if (maxAccel == 0) throw new RuntimeException("maxAccel 0");
+//
+//        double achievableVelocity = Math.sqrt(Math.pow(initialVelocity, 2) + 2*maxAccel*distance);
+//
+//        if (!Double.isFinite(achievableVelocity)) throw new RuntimeException("Non finite achievable vel " + initialVelocity + " " + maxAccel + " " + distance);
+//
+//        double time;
+//
+//        if (achievableVelocity>maxVel) {
+//            //TODO: find a better time estimate for when maxVel is greater than achievableVel
+//            time = distance/maxVel;
+//            if (!Double.isFinite(time)) throw new RuntimeException("Non finite time " + time);
+//
+//        } else {
+//            time = (achievableVelocity-initialVelocity)/maxAccel;
+//            if (!Double.isFinite(time)) throw new RuntimeException("Non finite time " + time);
+//        }
+//
+//        double headingVel = difference.getHeading()/time;
+//
+//        double maxHeadingVel = Math.min(
+//                Math.sqrt(Math.pow(prevVelocities.getHeading(), 2)+2*constraints.getMaxAngularDecel()*difference.getHeading()),
+//                constraints.getMaxAngularVel()
+//        );
+//
+//        if (headingVel>maxHeadingVel) {
+//            time = difference.getHeading()/maxHeadingVel;
+//        }
+//
+//        //divides the change in position by the change in time to give the velocity
+//        return difference.scale(1/time);
+//    }
 }
 
 /*

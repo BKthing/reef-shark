@@ -21,9 +21,9 @@ public class MecanumVelocityFinder {
         this.positions = positions;
         this.velocities = new ArrayList<>(positions.size());
         this.constraints = constraints;
-        this.relMaxVel = constraints.getMaxLinearVel().getY()/Math.sqrt(2);
+        this.relMaxVel = constraints.getMaxLinearVel()/Math.sqrt(2);
 
-        this.relMaxAccel = constraints.getMaxAccel().getY()/Math.sqrt(2);
+        this.relMaxAccel = constraints.getMaxLinearAccel()/Math.sqrt(2);
 
         assignVelocities();
     }
@@ -53,7 +53,7 @@ public class MecanumVelocityFinder {
 
             //checks if the time exceeds any constraints
             time = Math.max(
-                    Math.max(time, Math.max(difference.getX(), difference.getY())/constraints.getMaxLinearVel().getX()),
+                    Math.max(time, Math.max(difference.getX(), difference.getY())/constraints.getMaxLinearVel()),
                     relDifference.getHeading()/constraints.getMaxAngularVel()
                     );
 
@@ -94,7 +94,7 @@ public class MecanumVelocityFinder {
 
             //checks if the time exceeds any constraints
             time = Math.max(
-                    Math.max(time, Math.max(difference.getX(), difference.getY())/constraints.getMaxLinearVel().getX()),
+                    Math.max(time, Math.max(difference.getX(), difference.getY())/constraints.getMaxLinearVel()),
                     relDifference.getHeading()/constraints.getMaxAngularVel()
             );
 

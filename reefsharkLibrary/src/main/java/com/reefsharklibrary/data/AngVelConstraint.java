@@ -1,32 +1,26 @@
 package com.reefsharklibrary.data;
 
 public class AngVelConstraint {
-    private final double maxAngAccel;
-    private final double maxAngDecel;
     private final double maxAngVel;
+    private final double maxAngAccel;
+    private final double maxAngJerk;
 
 
-    public AngVelConstraint(double maxAngAccel, double maxAngDecel, double maxAngVel) {
+    public AngVelConstraint(double maxAngVel, double maxAngAccel, double maxAngJerk) {
         this.maxAngAccel = maxAngAccel;
-        this.maxAngDecel = maxAngDecel;
         this.maxAngVel = maxAngVel;
+        this.maxAngJerk = maxAngJerk;
     }
 
-    public AngVelConstraint(double maxAngAccel, double maxAngVel) {
-        this.maxAngAccel = maxAngAccel;
-        this.maxAngDecel = maxAngAccel;
-        this.maxAngVel = maxAngVel;
+    public double getMaxAngVel() {
+        return maxAngVel;
     }
 
     public double getMaxAngAccel() {
         return maxAngAccel;
     }
 
-    public double getMaxAngDecel() {
-        return maxAngDecel;
-    }
-
-    public double getMaxAngVel() {
-        return maxAngVel;
+    public double getMaxAngJerk() {
+        return maxAngJerk;
     }
 }
