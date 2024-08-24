@@ -67,7 +67,19 @@ public class CubicBezierCurve implements Geometry {
         dx = (Double t) -> - 3*Math.pow(t-1, 2)*p1.getX() - 3*(1-t)*(3*t-1)*p2.getX() + 3*(2-3*t)*t*p3.getX() + 3*Math.pow(t, 2)* p4.getX();
         dy = (Double t) -> - 3*Math.pow(t-1, 2)*p1.getY() - 3*(1-t)*(3*t-1)*p2.getY() + 3*(2-3*t)*t*p3.getY() + 3*Math.pow(t, 2)* p4.getY();
 
-        points = generate(.01);
+        points = generate(.5/estimateLength(5));
+    }
+
+    private double estimateLength(int points) {
+        double length = 0;
+        double loopDistance = 1/(double)points;
+        Vector2d prevPoint = new Vector2d(x.apply(0.0), y.apply(0.0));
+        for (int i = 1; i < points; i ++) {
+            Vector2d point = new Vector2d(x.apply(i * loopDistance), y.apply(i * loopDistance));
+            length += point.minus(prevPoint).getMagnitude();
+            prevPoint = point;
+        }
+        return length;
     }
 
     @Override

@@ -35,6 +35,7 @@ public class TrajectorySequenceRunner {
     private MotorPowers lastMotorPowers = new MotorPowers();
 
     private final ElapsedTimer trajectoryTime = new ElapsedTimer();
+
     private double delayTime = 0;
 
 

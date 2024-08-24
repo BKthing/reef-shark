@@ -4,6 +4,7 @@ import com.reefsharklibrary.data.MotorPowers;
 import com.reefsharklibrary.data.PIDCoeficients;
 import com.reefsharklibrary.data.Pose2d;
 import com.reefsharklibrary.data.Vector2d;
+import com.reefsharklibrary.misc.ElapsedTimer;
 
 public class PIDController {
 
@@ -18,6 +19,10 @@ public class PIDController {
 
     private double lateralComponentScalar;
 
+    private ElapsedTimer timer = new ElapsedTimer();
+
+    private double elapsedTime;
+
 
 
     PIDController(PIDCoeficients lateralPID, PIDCoeficients headingPID, double trackWidth) {
@@ -28,6 +33,7 @@ public class PIDController {
     }
 
     PIDController(PIDCoeficients lateralPID, PIDCoeficients headingPID, double trackWidth, double lateralComponentScalar) {
+
         this.lateralPID = lateralPID;
 
         //adjust the PID for the robots track width (converts radians -> circumference)
@@ -44,7 +50,11 @@ public class PIDController {
 //        targetPose.enforceFinite();
 //        targetMotionState.enforceFinite();
 
-
+        elapsedTime = timer.seconds();
+        if (elapsedTime > .5) {
+            elapsedTime = 0;
+        }
+        timer.reset();
         double velAngle = targetMotionState.getDirection();
         double headingVelDiff = currentPose.getHeading()-velAngle;
 
@@ -54,24 +64,24 @@ public class PIDController {
 
         MotorPowers motorPowers = new MotorPowers();
 
-        motorPowers.addVector(new Vector2d(Math.toDegrees(velAngle)/10, 0));
+//        motorPowers.addVector(new Vector2d(lateralDistanceComponent/10, 0));
 
         //added in order of importance
-//        motorPowers.addHeading(updateHeadingPID(targetPose.getHeading()-currentPose.getHeading(), currentVelocity.getHeading()));
-//        motorPowers.addVector(updateLateralPID(new Vector2d(0, lateralDistanceComponent).rotate(-currentPose.getHeading()), new Vector2d(0, velocityComponent.getY()).rotate(-currentPose.getHeading())).scale(lateralComponentScalar));
+        motorPowers.addHeading(updateHeadingPID(targetPose.getHeading()-currentPose.getHeading(), currentVelocity.getHeading()));
+        motorPowers.addVector(updateLateralPID(new Vector2d(0, lateralDistanceComponent).rotate(-currentPose.getHeading()), new Vector2d(0, velocityComponent.getY()).rotate(-currentPose.getHeading())).scale(lateralComponentScalar));
 //        motorPowers.addVector(updateVelPID(new Vector2d(velocityComponent.getX(), 0).rotate(headingVelDiff), new Vector2d(forwardAccelComponent, 0).rotate(headingVelDiff)));
 
         return motorPowers;
     }
 
     private double updateHeadingPID(double headingDiff, double headingVel) {
-        headingI += headingDiff*headingPID.getI();
+        headingI += headingDiff*headingPID.getI()*elapsedTime;
 
-        return headingDiff*headingPID.getP() + headingI + headingVel*headingPID.getD();
+        return -headingDiff*headingPID.getP() - headingI + headingVel*headingPID.getD();
     }
 
     private Vector2d updateLateralPID(Vector2d posDiff, Vector2d posVel) {
-        lateralI = lateralI.plus(posDiff.multiply(lateralPID.getI()));
+        lateralI = lateralI.plus(posDiff.multiply(lateralPID.getI()*elapsedTime));
 
         return new Vector2d(
                 posDiff.getX()*lateralPID.getP() + lateralI.getX() + posVel.getX()*lateralPID.getD(),
@@ -80,7 +90,7 @@ public class PIDController {
     };
 
     private Vector2d updateVelPID(Vector2d velDiff, Vector2d posAccel) {
-        velI = velI.plus(velDiff.multiply(lateralPID.getI()));
+        velI = velI.plus(velDiff.multiply(lateralPID.getI()*elapsedTime));
 
         return new Vector2d(
                 velDiff.getX()*lateralPID.getkV(),// + velI.getX(),// + posAccel.getX()*lateralPID.getD(),
