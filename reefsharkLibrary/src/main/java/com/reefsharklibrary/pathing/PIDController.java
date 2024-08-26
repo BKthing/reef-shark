@@ -68,7 +68,7 @@ public class PIDController {
         //added in order of importance
         motorPowers.addHeading(updateHeadingPID(Rotation.inRange(targetPose.getHeading()-currentPose.getHeading(), Math.PI, -Math.PI), currentVelocity.getHeading()));
         motorPowers.addVector(updateLateralPID(new Vector2d(0, lateralDistanceComponent).rotate(headingVelDiff), new Vector2d(0, velocityComponent.getY()).rotate(headingVelDiff)).scale(lateralComponentScalar));
-        motorPowers.addVector(new Vector2d(.6, 0).rotate(headingVelDiff));
+//        motorPowers.addVector(new Vector2d(.6, 0).rotate(headingVelDiff));
 //        motorPowers.addVector(updateVelPID(new Vector2d(velocityComponent.getX(), 0).rotate(headingVelDiff), new Vector2d(forwardAccelComponent, 0).rotate(headingVelDiff)));
     }
 
