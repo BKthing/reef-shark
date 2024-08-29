@@ -73,7 +73,7 @@ public class Trajectory implements TrajectoryInterface {
     public void updateTargetPoint(Pose2d pose) {
         advanceForward(pose, pose.getVector2d().minus(positions.get(currentPoseIndex).getVector2d()).compareVal());
         advanceBack(pose, pose.getVector2d().minus(positions.get(currentPoseIndex).getVector2d()).compareVal());
-        currentPoseIndex += 5;
+//        currentPoseIndex += 5;
         updateCallMarkers();
         updateTemporalMarkers();
     }
