@@ -1,5 +1,6 @@
 package com.reefsharklibrary.pathing;
 
+import com.reefsharklibrary.data.DirectionalPose;
 import com.reefsharklibrary.data.Pose2d;
 import com.reefsharklibrary.pathing.data.IndexCallMarker;
 
@@ -17,9 +18,11 @@ public interface TrajectoryInterface {
 
     Pose2d getTargetPose();
 
-    int getTargetPoseIndex();
+    DirectionalPose getTargetDirectionalPose();
 
-    Pose2d getTargetMotionState();
+    double getTargetDirection();
+
+    int getTargetPoseIndex();
 
     boolean targetEndpoint();
 
@@ -29,7 +32,7 @@ public interface TrajectoryInterface {
 
     Pose2d getEndError();
 
-    List<Pose2d> poseList();
+    List<DirectionalPose> poseList();
 
     List<IndexCallMarker> callMarkerList();
 

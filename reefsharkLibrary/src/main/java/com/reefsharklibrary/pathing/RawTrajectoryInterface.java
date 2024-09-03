@@ -1,6 +1,7 @@
 package com.reefsharklibrary.pathing;
 
 import com.reefsharklibrary.data.ConstraintSet;
+import com.reefsharklibrary.data.DirectionalPose;
 import com.reefsharklibrary.data.Pose2d;
 import com.reefsharklibrary.pathing.data.IndexCallMarker;
 import com.reefsharklibrary.pathing.data.TemporalCallMarker;
@@ -14,13 +15,13 @@ public interface RawTrajectoryInterface {
 
     Pose2d getLastPose();
 
-    List<Pose2d> getPoseList();
+    List<DirectionalPose> getDirectionalPoseList();
 
-    void addPose(Pose2d position, double distance);
+    void addDirectionalPose(DirectionalPose position, double distance);
 
-    void addSet(List<Pose2d> points, double totalDistance);
+    void addSet(List<DirectionalPose> points, double totalDistance);
 
-    void addTangentSet(List<Pose2d> points, double totalDistance);
+    void addTangentSet(List<DirectionalPose> points, double totalDistance);
 
     void addCallMarker(IndexCallMarker callMarker);
 

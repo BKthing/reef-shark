@@ -1,5 +1,6 @@
 package com.reefsharklibrary.pathType;
 
+import com.reefsharklibrary.data.DirectionalPose;
 import com.reefsharklibrary.data.Pose2d;
 import com.reefsharklibrary.data.Rotation;
 import com.reefsharklibrary.geometries.Geometry;
@@ -20,8 +21,8 @@ public class LinearHeading implements Path {
     }
 
     @Override
-    public List<Pose2d> generate(double resolution) {
-        List<Pose2d> path = new ArrayList<>();
+    public List<DirectionalPose> generate(double resolution) {
+        List<DirectionalPose> path = new ArrayList<>();
 
         Rotation heading = new Rotation();
 
@@ -39,11 +40,11 @@ public class LinearHeading implements Path {
                 throw new RuntimeException("Non finite heading");
             }
 
-            path.add(geometry.getPoint(i).toPose(heading.get()));
+            path.add(geometry.getPoint(i).toPose(heading.get()).toDirectionalPose(geometry.tangentAngle(i)));
             heading.add(headingInterval);
         }
 
-        path.add(geometry.endPoint().toPose(endHeading));
+        path.add(geometry.endPoint().toPose(endHeading).toDirectionalPose(geometry.tangentAngle(geometry.getTotalDistance())));
 
         return path;
     }

@@ -1,6 +1,7 @@
 package com.reefsharklibrary.pathing;
 
 import com.reefsharklibrary.data.ConstraintSet;
+import com.reefsharklibrary.data.DirectionalPose;
 import com.reefsharklibrary.data.Pose2d;
 import com.reefsharklibrary.pathing.data.IndexCallMarker;
 import com.reefsharklibrary.pathing.data.TemporalCallMarker;
@@ -9,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RawPointTurnTrajectory implements RawTrajectoryInterface {
-    private final List<Pose2d> positions = new ArrayList<>();
+    private final List<DirectionalPose> positions = new ArrayList<>();
 
     private List<IndexCallMarker> callMarkers = new ArrayList<>();
     private List<TemporalCallMarker> temporalCallMarkers = new ArrayList<>();
@@ -42,22 +43,22 @@ public class RawPointTurnTrajectory implements RawTrajectoryInterface {
     }
 
     @Override
-    public List<Pose2d> getPoseList() {
+    public List<DirectionalPose> getDirectionalPoseList() {
         return positions;
     }
 
     @Override
-    public void addPose(Pose2d position, double distance) {
+    public void addDirectionalPose(DirectionalPose position, double distance) {
         this.positions.add(position);
     }
 
     @Override
-    public void addSet(List<Pose2d> points, double totalDistance) {
+    public void addSet(List<DirectionalPose> points, double totalDistance) {
         this.positions.addAll(points);
     }
 
     @Override
-    public void addTangentSet(List<Pose2d> points, double totalDistance) {
+    public void addTangentSet(List<DirectionalPose> points, double totalDistance) {
         //adds all but the first term to the list
         for (int i = 1; i<points.size(); i++) {
             positions.add(points.get(i));

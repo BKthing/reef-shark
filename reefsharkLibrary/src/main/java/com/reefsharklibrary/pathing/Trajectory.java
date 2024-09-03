@@ -1,5 +1,6 @@
 package com.reefsharklibrary.pathing;
 
+import com.reefsharklibrary.data.DirectionalPose;
 import com.reefsharklibrary.misc.ElapsedTimer;
 import com.reefsharklibrary.pathing.data.IndexCallMarker;
 import com.reefsharklibrary.data.Pose2d;
@@ -11,8 +12,7 @@ import java.util.Queue;
 
 public class Trajectory implements TrajectoryInterface {
 
-    private final List<Pose2d> positions;
-    private final List<Pose2d> motionStates;
+    private final List<DirectionalPose> positions;
 
     private final List<IndexCallMarker> callMarkers;
     private int callMarkerIndex = 0;
@@ -33,8 +33,7 @@ public class Trajectory implements TrajectoryInterface {
 
 
     public Trajectory(
-            List<Pose2d> positions,
-            List<Pose2d> motionStates,
+            List<DirectionalPose> positions,
             List<IndexCallMarker> callMarkers,
             List<TemporalCallMarker> localTemporalMarkers,
             Pose2d followError,
@@ -44,7 +43,6 @@ public class Trajectory implements TrajectoryInterface {
             int targetEndPositionThreshold
     ) {
         this.positions = positions;
-        this.motionStates = motionStates;
         this.callMarkers = callMarkers;
         this.localTemporalMarkers = localTemporalMarkers;
         this.followError = followError;
@@ -116,15 +114,18 @@ public class Trajectory implements TrajectoryInterface {
     }
 
     @Override
-    public int getTargetPoseIndex() {
-        return currentPoseIndex;
+    public DirectionalPose getTargetDirectionalPose() {
+        return positions.get(currentPoseIndex);
     }
 
-
+    @Override
+    public double getTargetDirection() {
+        return positions.get(currentPoseIndex).getDirection();
+    }
 
     @Override
-    public Pose2d getTargetMotionState() {
-        return  motionStates.get(currentPoseIndex);
+    public int getTargetPoseIndex() {
+        return currentPoseIndex;
     }
 
     @Override
@@ -148,7 +149,7 @@ public class Trajectory implements TrajectoryInterface {
     }
 
     @Override
-    public List<Pose2d> poseList() {
+    public List<DirectionalPose> poseList() {
         return positions;
     }
 

@@ -1,5 +1,6 @@
 package com.reefsharklibrary.pathing;
 
+import com.reefsharklibrary.data.DirectionalPose;
 import com.reefsharklibrary.data.Pose2d;
 import com.reefsharklibrary.pathing.data.IndexCallMarker;
 
@@ -32,14 +33,20 @@ public class PointTurnTrajectory implements TrajectoryInterface {
     }
 
     @Override
-    public int getTargetPoseIndex() {
+    public DirectionalPose getTargetDirectionalPose() {
+        return null;
+    }
+
+    @Override
+    public double getTargetDirection() {
         return 0;
     }
 
     @Override
-    public Pose2d getTargetMotionState() {
-        return null;
+    public int getTargetPoseIndex() {
+        return 0;
     }
+
 
     @Override
     public boolean targetEndpoint() {
@@ -62,7 +69,7 @@ public class PointTurnTrajectory implements TrajectoryInterface {
     }
 
     @Override
-    public List<Pose2d> poseList() {
+    public List<DirectionalPose> poseList() {
         return null;
     }
 

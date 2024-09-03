@@ -30,6 +30,10 @@ public class Pose2d {
         return vector2d.getDirection();
     }
 
+    public DirectionalPose toDirectionalPose(double direction) {
+        return new DirectionalPose(vector2d.getX(), vector2d.getY(), heading, direction);
+    }
+
     public Vector2d getVector2d() {
         return vector2d;
     }

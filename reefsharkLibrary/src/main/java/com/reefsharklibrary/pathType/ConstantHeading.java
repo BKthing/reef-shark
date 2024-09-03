@@ -1,5 +1,6 @@
 package com.reefsharklibrary.pathType;
 
+import com.reefsharklibrary.data.DirectionalPose;
 import com.reefsharklibrary.data.Pose2d;
 import com.reefsharklibrary.geometries.Geometry;
 
@@ -17,14 +18,14 @@ public class ConstantHeading implements Path {
     }
 
     @Override
-    public List<Pose2d> generate(double resolution) {
-        List<Pose2d> path = new ArrayList<>();
+    public List<DirectionalPose> generate(double resolution) {
+        List<DirectionalPose> path = new ArrayList<>();
 
         for (double i = 0; i < geometry.getTotalDistance()-resolution; i += resolution) {
-            path.add(geometry.getPoint(i).toPose(heading));
+            path.add(geometry.getPoint(i).toPose(heading).toDirectionalPose(geometry.tangentAngle(i)));
         }
 
-        path.add(geometry.endPoint().toPose(heading));
+        path.add(geometry.endPoint().toPose(heading).toDirectionalPose(geometry.getTotalDistance()));
 
         return path;
     }

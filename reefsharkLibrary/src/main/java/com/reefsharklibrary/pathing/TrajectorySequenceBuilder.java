@@ -37,8 +37,9 @@ public class TrajectorySequenceBuilder {
             ConstraintSet constraints
     ) {
         trajectories.add(new RawTrajectory(0));
-        currentTrajectory().addPose(startPose, 0);
         tangentAngle = startPose.getHeading();
+        currentTrajectory().addDirectionalPose(startPose.toDirectionalPose(tangentAngle), 0);
+
 
         this.constraints = constraints;
     }
