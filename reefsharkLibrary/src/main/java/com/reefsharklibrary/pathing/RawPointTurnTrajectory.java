@@ -107,6 +107,20 @@ public class RawPointTurnTrajectory implements RawTrajectoryInterface {
 
     @Override
     public TrajectoryInterface build(ConstraintSet constraints, double resolution) {
-        return null;
+        if (positions.size()!=2) {
+            throw new RuntimeException("Wrong number of turn points");
+        }
+
+        Pose2d turn = positions.get(1).minus(positions.get(0));
+
+        if (positions.get(1).getX() != positions.get(0).getX() || positions.get(1).getY() != positions.get(0).getY() || positions.get(1).getHeading() == positions.get(0).getHeading()) {
+            throw new RuntimeException("Invalid turn points");
+        }
+
+        constraints.getMaxAngularVel();
+
+        return new PointTurnTrajectory();
+
+
     }
 }

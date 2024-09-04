@@ -14,6 +14,8 @@ public class Trajectory implements TrajectoryInterface {
 
     private final List<DirectionalPose> positions;
 
+    private final List<Pose2d> pose2dpositions;
+
     private final List<IndexCallMarker> callMarkers;
     private int callMarkerIndex = 0;
 
@@ -43,6 +45,7 @@ public class Trajectory implements TrajectoryInterface {
             int targetEndPositionThreshold
     ) {
         this.positions = positions;
+        this.pose2dpositions = pose2dList();
         this.callMarkers = callMarkers;
         this.localTemporalMarkers = localTemporalMarkers;
         this.followError = followError;
@@ -51,6 +54,15 @@ public class Trajectory implements TrajectoryInterface {
         this.minTime = minTime;
         this.targetEndPositionThreshold = targetEndPositionThreshold;
     }
+
+    private List<Pose2d> pose2dList() {
+        List<Pose2d> list = new ArrayList<>();
+        for (DirectionalPose pose : positions) {
+            list.add(pose);
+        }
+
+        return list;
+    };
 
     @Override
     public void start() {
@@ -149,7 +161,12 @@ public class Trajectory implements TrajectoryInterface {
     }
 
     @Override
-    public List<DirectionalPose> poseList() {
+    public List<Pose2d> poseList() {
+        return pose2dpositions;
+    }
+
+    @Override
+    public List<DirectionalPose> directionalPoseList() {
         return positions;
     }
 

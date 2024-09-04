@@ -27,7 +27,7 @@ public class EndpointController {
 
     private Vector2d lateralI = new Vector2d(0, 0);
 
-    EndpointController(PIDCoeficients lateralPID, PIDCoeficients headingPID, Pose2d naturalDecel) {
+    public EndpointController(PIDCoeficients lateralPID, PIDCoeficients headingPID, Pose2d naturalDecel) {
         if (naturalDecel.getX()>0 && naturalDecel.getY()>0 && naturalDecel.getHeading()>0) {
             this.lateralPID = lateralPID;
             this.headingPID = headingPID;
@@ -38,8 +38,6 @@ public class EndpointController {
     }
 
     public void calculatePowers(Pose2d currentPose, Pose2d currentVelocity, Pose2d targetPose, MotorPowers drivePower) {
-        drivePower.reset();
-
         estimatedEndPos = new TimePose2d(estimateEndPos(currentPose, currentVelocity));
         prevEndPositions.add(estimatedEndPos);
 

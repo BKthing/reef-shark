@@ -1,6 +1,7 @@
 package com.reefsharklibrary.pathing;
 
 import com.reefsharklibrary.data.ConstraintSet;
+import com.reefsharklibrary.data.DirectionalPose;
 import com.reefsharklibrary.data.Pose2d;
 import com.reefsharklibrary.data.Vector2d;
 import com.reefsharklibrary.geometries.CubicBezierCurve;
@@ -169,12 +170,17 @@ public class TrajectorySequenceBuilder {
         return this;
     }
 
-    public TrajectorySequenceBuilder turnTo(double heading) {
-        return turn(heading);
+    public TrajectorySequenceBuilder turn(double radians) {
+        return turnTo(getLastPose().getHeading()+radians);
     }
 
-    public TrajectorySequenceBuilder turn(double turnAmount) {
+    public TrajectorySequenceBuilder turnTo(double heading) {
+        Pose2d lastPose = getLastPose();
+
         trajectories.add(new RawPointTurnTrajectory(currentTrajectory().getTotalDistance()));
+        currentTrajectory().addDirectionalPose(lastPose.toDirectionalPose(0), 0);
+        currentTrajectory().addDirectionalPose(new Pose2d(lastPose.getVector2d(), heading).toDirectionalPose(0), 0);
+
         return this;
     }
 

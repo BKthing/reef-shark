@@ -2,14 +2,21 @@ package com.reefsharklibrary.pathing;
 
 import com.reefsharklibrary.data.DirectionalPose;
 import com.reefsharklibrary.data.Pose2d;
+import com.reefsharklibrary.misc.ElapsedTimer;
 import com.reefsharklibrary.pathing.data.IndexCallMarker;
 
 import java.util.List;
 
 public class PointTurnTrajectory implements TrajectoryInterface {
+
+    private final ElapsedTimer timer = new ElapsedTimer();
+
+
+
+
     @Override
     public void start() {
-
+        timer.reset();
     }
 
     @Override
@@ -69,12 +76,17 @@ public class PointTurnTrajectory implements TrajectoryInterface {
     }
 
     @Override
-    public List<DirectionalPose> poseList() {
+    public List<DirectionalPose> directionalPoseList() {
         return null;
     }
 
     @Override
     public List<IndexCallMarker> callMarkerList() {
+        return null;
+    }
+
+    @Override
+    public List<Pose2d> poseList() {
         return null;
     }
 

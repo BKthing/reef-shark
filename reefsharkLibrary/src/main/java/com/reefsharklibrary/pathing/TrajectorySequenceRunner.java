@@ -78,9 +78,9 @@ public class TrajectorySequenceRunner {
 
                 if (trajectorySequence.getCurrentTrajectory().targetEndpoint()) {//trajectorySequence.getCurrentTrajectory().targetEndpoint()
                     targetPose = trajectorySequence.getCurrentTrajectory().endPose();
-                    followState = FollowState.NO_TRAJECTORY;
+//                    followState = FollowState.NO_TRAJECTORY;
 
-//                    followState = FollowState.TARGET_END_POINT;
+                    followState = FollowState.TARGET_END_POINT;
                 }
 
                 break;

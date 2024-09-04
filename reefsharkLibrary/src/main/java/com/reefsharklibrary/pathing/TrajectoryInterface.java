@@ -32,7 +32,9 @@ public interface TrajectoryInterface {
 
     Pose2d getEndError();
 
-    List<DirectionalPose> poseList();
+    List<Pose2d> poseList();
+
+    List<DirectionalPose> directionalPoseList();
 
     List<IndexCallMarker> callMarkerList();
 
