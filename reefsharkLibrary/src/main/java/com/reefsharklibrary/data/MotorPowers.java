@@ -69,10 +69,10 @@ public class MotorPowers {
     public void addHeading(double heading) {
         double scaledHeading = getScaledPower(heading);
 
-        add(0, scaledHeading);
-        add(1, scaledHeading);
-        add(2, -scaledHeading);
-        add(3, -scaledHeading);
+        add(0, -scaledHeading);
+        add(1, -scaledHeading);
+        add(2, scaledHeading);
+        add(3, scaledHeading);
 
         checkNaN();
     }
@@ -130,10 +130,10 @@ public class MotorPowers {
             pose = pose.scale(remainingPower/totalPower);
         }
 
-        add(0, pose.getX() - pose.getY() + pose.getHeading());
-        add(1, pose.getX() + pose.getY() + pose.getHeading());
-        add(2, pose.getX() - pose.getY() - pose.getHeading());
-        add(3, pose.getX() + pose.getY() - pose.getHeading());
+        add(0, pose.getX() - pose.getY() - pose.getHeading());
+        add(1, pose.getX() + pose.getY() - pose.getHeading());
+        add(2, pose.getX() - pose.getY() + pose.getHeading());
+        add(3, pose.getX() + pose.getY() + pose.getHeading());
 
         checkNaN();
     }

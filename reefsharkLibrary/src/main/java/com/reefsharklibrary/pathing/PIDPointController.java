@@ -49,22 +49,22 @@ public class PIDPointController {
 
         //added in order of importance
         motorPowers.addHeading(updateHeadingPID(Rotation.inRange(relDistance.getHeading(), Math.PI, -Math.PI), currentVelocity.getHeading()));
-        motorPowers.addVector(updateLateralPID(relDistance.getVector2d(), currentVelocity.getVector2d()));
+        motorPowers.addVector(updateLateralPID(relDistance.getVector2d(), currentVelocity.getVector2d().rotate(-currentPose.getHeading())));
 
     }
 
     private double updateHeadingPID(double headingDiff, double headingVel) {
         headingI += headingDiff*headingPID.getI()*elapsedTime;
 
-        return -headingDiff*headingPID.getP() - headingI + headingVel*headingPID.getD();
+        return headingDiff*headingPID.getP() + headingI - headingVel*headingPID.getD();
     }
 
     private Vector2d updateLateralPID(Vector2d posDiff, Vector2d posVel) {
         lateralI = lateralI.plus(posDiff.multiply(lateralPID.getI()*elapsedTime));
 
         return new Vector2d(
-                posDiff.getX()*lateralPID.getP() + lateralI.getX() + posVel.getX()*lateralPID.getD(),
-                posDiff.getY()*lateralPID.getP() + lateralI.getY() + posVel.getY()*lateralPID.getD()
+                posDiff.getX()*lateralPID.getP() + lateralI.getX() - posVel.getX()*lateralPID.getD(),
+                posDiff.getY()*lateralPID.getP() + lateralI.getY() - posVel.getY()*lateralPID.getD()
         );
     }
 }

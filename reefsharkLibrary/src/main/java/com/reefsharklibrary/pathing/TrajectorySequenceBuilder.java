@@ -157,6 +157,11 @@ public class TrajectorySequenceBuilder {
         return this;
     }
 
+    public TrajectorySequenceBuilder setEndDelay(double delay) {
+        currentTrajectory().setEndDelay(delay);
+        return this;
+    }
+
     public TrajectorySequenceBuilder addPath(Path pathSegment) {
         if (pathSegment.isTangent(tangentAngle) || firstTrajectory) {
             currentTrajectory().addTangentSet(pathSegment.generate(resolution), pathSegment.totalDistance());

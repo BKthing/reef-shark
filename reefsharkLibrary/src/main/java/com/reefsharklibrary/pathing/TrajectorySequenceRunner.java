@@ -57,6 +57,10 @@ public class TrajectorySequenceRunner {
 
         trajectoryStarted = false;
 
+//        followState = FollowState.TARGET_END_POINT;
+//
+//        targetPose = trajectorySequence.getCurrentTrajectory().endPose();
+
         followState = FollowState.FOLLOW_TRAJECTORY;
     }
 
@@ -100,11 +104,12 @@ public class TrajectorySequenceRunner {
             case TARGET_END_POINT -> {
                 trajectorySequence.getCurrentTrajectory().updateTargetPoint(poseEstimate);
                 trajectorySequence.updateGlobalTemporalMarkers();
+
                 endpointEstimator.updateEndPos(poseEstimate, poseVelocity);
                 pidPointController.calculatePowers(endpointEstimator.getEstimatedEndPos(), endpointEstimator.getEstimatedEndVel(), targetPose, motorPowers);
 
                 //stops targeting endpoint if robot is close enough and has a low velocity
-                if (poseEstimate.minus(targetPose).inRange(trajectorySequence.getCurrentTrajectory().getEndError()) && poseVelocity.inRange(new Pose2d(.5, .5, .5))) {
+                if (poseEstimate.minus(targetPose).inRange(trajectorySequence.getCurrentTrajectory().getEndError()) && poseVelocity.inRange(new Pose2d(.5, .5, Math.toRadians(2)))) {
                     delayTime = Math.max(trajectorySequence.getCurrentTrajectory().getMinTime() - trajectoryTime.seconds(), trajectorySequence.getCurrentTrajectory().getEndDelay());
                     trajectoryTime.reset();
                     followState = FollowState.NEXT_TRAJECTORY_DELAY;

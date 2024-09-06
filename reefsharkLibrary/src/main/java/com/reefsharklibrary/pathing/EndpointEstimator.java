@@ -82,7 +82,7 @@ public class EndpointEstimator {
         TimePose2d old = prevEndPositions.get(0);
         TimePose2d cur = prevEndPositions.get(prevEndPositions.size()-1);
 
-        return new TimePose2d(cur.minus(old).scale((double) 1000/(cur.time-old.time)), (cur.time+old.time)/2);
+        return new TimePose2d(cur.minus(old).scale((double) 1000/(cur.getTime()-old.getTime())), (cur.getTime()+old.getTime())/2);
     }
 
     public Pose2d getEstimatedEndPos() {

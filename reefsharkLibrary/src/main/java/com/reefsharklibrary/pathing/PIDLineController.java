@@ -61,27 +61,27 @@ public class PIDLineController {
         double headingVelDiff = -currentPose.getHeading()+velAngle;
 
         double lateralDistanceComponent = targetPose.getVector2d().minus(currentPose.getVector2d()).rotate(-velAngle).getY();
-        double velocityComponent = -currentVelocity.getVector2d().rotate(-velAngle).getY();
+        double velocityComponent = currentVelocity.getVector2d().rotate(-velAngle).getY();
 //        Vector2d velocityComponent = targetMotionState.getVector2d().minus(currentVelocity.getVector2d()).rotate(-velAngle);
 
         //added in order of importance
         motorPowers.addHeading(updateHeadingPID(Rotation.inRange(targetPose.getHeading()-currentPose.getHeading(), Math.PI, -Math.PI), currentVelocity.getHeading()));
-        motorPowers.addVector(updateLateralPID(new Vector2d(0, lateralDistanceComponent).rotate(headingVelDiff), new Vector2d(0, velocityComponent).rotate(headingVelDiff)).scale(lateralComponentScalar));
+        motorPowers.addVector(updateLateralPID(new Vector2d(0, lateralDistanceComponent).rotate(headingVelDiff), new Vector2d(0, velocityComponent).rotate(headingVelDiff)));//.scale(lateralComponentScalar)
         motorPowers.addVector(new Vector2d(1, 0).rotate(headingVelDiff));
     }
 
     private double updateHeadingPID(double headingDiff, double headingVel) {
         headingI += headingDiff*headingPID.getI()*elapsedTime;
 
-        return -headingDiff*headingPID.getP() - headingI + headingVel*headingPID.getD();
+        return headingDiff*headingPID.getP() + headingI - headingVel*headingPID.getD();
     }
 
     private Vector2d updateLateralPID(Vector2d posDiff, Vector2d posVel) {
         lateralI = lateralI.plus(posDiff.multiply(lateralPID.getI()*elapsedTime));
 
         return new Vector2d(
-                posDiff.getX()*lateralPID.getP() + lateralI.getX() + posVel.getX()*lateralPID.getD(),
-                posDiff.getY()*lateralPID.getP() + lateralI.getY() + posVel.getY()*lateralPID.getD()
+                posDiff.getX()*lateralPID.getP() + lateralI.getX() - posVel.getX()*lateralPID.getD(),
+                posDiff.getY()*lateralPID.getP() + lateralI.getY() - posVel.getY()*lateralPID.getD()
         );
     }
 }
