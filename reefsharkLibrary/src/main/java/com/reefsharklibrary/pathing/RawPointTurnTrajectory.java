@@ -7,6 +7,7 @@ import com.reefsharklibrary.pathing.data.IndexCallMarker;
 import com.reefsharklibrary.pathing.data.TemporalCallMarker;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class RawPointTurnTrajectory implements RawTrajectoryInterface {
@@ -22,6 +23,8 @@ public class RawPointTurnTrajectory implements RawTrajectoryInterface {
     private double minTime = 0;
 
     private final double totalDitance;
+
+    private double targetEndDistance = 2;
 
     public RawPointTurnTrajectory(double initialDistance) {
         this.totalDitance = initialDistance;
@@ -67,12 +70,14 @@ public class RawPointTurnTrajectory implements RawTrajectoryInterface {
 
     @Override
     public void addCallMarker(IndexCallMarker callMarker) {
-        callMarkers.add(callMarker);
+        throw new RuntimeException("callMarker on PointTurn trajectory");
+//        callMarkers.add(callMarker);
     }
 
     @Override
     public void setCallMarkers(List<IndexCallMarker> callMarkers) {
-        this.callMarkers = callMarkers;
+        throw new RuntimeException("callMarker on PointTurn trajectory");
+//        this.callMarkers = callMarkers;
     }
 
     @Override
@@ -107,20 +112,24 @@ public class RawPointTurnTrajectory implements RawTrajectoryInterface {
 
     @Override
     public TrajectoryInterface build(ConstraintSet constraints, double resolution) {
+        if (temporalCallMarkers.size() > 0) {
+            sortTemporalMarkers();
+            minTime = Math.max(temporalCallMarkers.get(temporalCallMarkers.size() - 1).getCallTime(), minTime);
+        }
+
         if (positions.size()!=2) {
             throw new RuntimeException("Wrong number of turn points");
         }
-
-        Pose2d turn = positions.get(1).minus(positions.get(0));
 
         if (positions.get(1).getX() != positions.get(0).getX() || positions.get(1).getY() != positions.get(0).getY() || positions.get(1).getHeading() == positions.get(0).getHeading()) {
             throw new RuntimeException("Invalid turn points");
         }
 
-        constraints.getMaxAngularVel();
-
-        return new PointTurnTrajectory();
-
-
+        return new PointTurnTrajectory(positions.get(0), positions.get(1), constraints.getMaxAngularVel(), temporalCallMarkers, endError, endDelay, minTime, targetEndDistance/constraints.getWheelBaseRadius());
     }
+
+    private void sortTemporalMarkers() {
+        Collections.sort(temporalCallMarkers);
+    }
+
 }

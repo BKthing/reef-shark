@@ -14,9 +14,8 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.DoubleSupplier;
 
-public class TwoWheelLocalizer implements Localizer {
+public class OldTwoWheelOldLocalizer implements OldLocalizer {
 
     public final double perpendicularX;
     public final double parallelY;
@@ -40,7 +39,7 @@ public class TwoWheelLocalizer implements Localizer {
     /*
     * Thanks to https://github.com/mrjmac/7161-powerplay/blob/main/TeamCode/src/main/java/OceanCrashPurePursuit/autonomous/odometry/TwoWheelTrackingLocalizer.java#L44 for the localizer code
     * */
-    public TwoWheelLocalizer(double perpendicularX, double parallelY) {
+    public OldTwoWheelOldLocalizer(double perpendicularX, double parallelY) {
         this.perpendicularX = perpendicularX;
         this.parallelY = parallelY;
 

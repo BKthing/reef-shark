@@ -6,13 +6,10 @@ import com.reefsharklibrary.data.Pose2d;
 import com.reefsharklibrary.data.TimePose2d;
 import com.reefsharklibrary.data.Vector2d;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
-public class EndpointController {
+public class EndpointEstimator {
 
     private MotorPowers prevDrivePower = new MotorPowers();
 
@@ -21,13 +18,15 @@ public class EndpointController {
     private final Pose2d naturalDecel;
 
     private TimePose2d estimatedEndPos;// = new TimePose2d(new Pose2d(0, 0, 0));
+    private Pose2d estimatedEndVel;
+
     private final LinkedList<TimePose2d> prevEndPositions = new LinkedList<>();
 
     private double headingI = 0;
 
     private Vector2d lateralI = new Vector2d(0, 0);
 
-    public EndpointController(PIDCoeficients lateralPID, PIDCoeficients headingPID, Pose2d naturalDecel) {
+    public EndpointEstimator(PIDCoeficients lateralPID, PIDCoeficients headingPID, Pose2d naturalDecel) {
         if (naturalDecel.getX()>0 && naturalDecel.getY()>0 && naturalDecel.getHeading()>0) {
             this.lateralPID = lateralPID;
             this.headingPID = headingPID;
@@ -37,29 +36,13 @@ public class EndpointController {
         }
     }
 
-    public void calculatePowers(Pose2d currentPose, Pose2d currentVelocity, Pose2d targetPose, MotorPowers drivePower) {
+
+    public void updateEndPos(Pose2d currentPose, Pose2d currentVelocity) {
         estimatedEndPos = new TimePose2d(estimateEndPos(currentPose, currentVelocity));
         prevEndPositions.add(estimatedEndPos);
 
-        drivePower.orderedAddPowers(findCorrectivePowers(targetPose.minus(estimatedEndPos).rotateVector(currentPose.getHeading()), getPoseVelocitiy().rotateVector(currentPose.getHeading())));
-
-        prevDrivePower = drivePower;
+        estimatedEndVel = estimateEndVelocity();
     }
-
-    public MotorPowers getLastMotorPower() {
-        return prevDrivePower;
-    }
-
-    //finds motor powers to move the end point closer to the target point
-    private Pose2d findCorrectivePowers(Pose2d endDiff, Pose2d poseVel) {
-        lateralI = lateralI.plus(endDiff.getVector2d().multiply(lateralPID.getI()));
-        headingI += endDiff.getHeading()*headingPID.getI();
-
-        return new Pose2d(
-            endDiff.getX()*lateralPID.getP() + lateralI.getX() + poseVel.getX()*lateralPID.getD(),
-            endDiff.getY()*lateralPID.getP() + lateralI.getY() + poseVel.getY()*lateralPID.getD(),
-            endDiff.getHeading()*headingPID.getP() + headingI + poseVel.getHeading()*headingPID.getD()
-        );}
 
     //estimates the position where the robot will come to a stop
     private Pose2d estimateEndPos(Pose2d currentPose, Pose2d currentVelocity) {
@@ -87,7 +70,7 @@ public class EndpointController {
 //        return ((-Deceleration/3+Acceleration)*.5*t+Velocity)*t+Position;
     }
 
-    private Pose2d getPoseVelocitiy() {
+    private Pose2d estimateEndVelocity() {
         if (prevEndPositions.size()<2) {
             return new Pose2d(0, 0, 0);
         }
@@ -104,5 +87,9 @@ public class EndpointController {
 
     public Pose2d getEstimatedEndPos() {
         return Objects.requireNonNullElseGet(estimatedEndPos, () -> new Pose2d(0, 0, 0));
+    }
+
+    public Pose2d getEstimatedEndVel() {
+        return Objects.requireNonNullElseGet(estimatedEndVel, () -> new Pose2d(0, 0, 0));
     }
 }

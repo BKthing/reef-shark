@@ -56,12 +56,7 @@ public class Trajectory implements TrajectoryInterface {
     }
 
     private List<Pose2d> pose2dList() {
-        List<Pose2d> list = new ArrayList<>();
-        for (DirectionalPose pose : positions) {
-            list.add(pose);
-        }
-
-        return list;
+        return new ArrayList<>(positions);
     };
 
     @Override

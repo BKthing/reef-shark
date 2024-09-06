@@ -28,7 +28,9 @@ public class TrajectorySequenceRunner {
 
     private final PIDLineController pidLineController;
 
-    private final EndpointController endpointController;
+    private final EndpointEstimator endpointEstimator;
+
+    private final PIDPointController pidPointController;
 
     private final ConstraintSet constraintSet;
 
@@ -45,7 +47,8 @@ public class TrajectorySequenceRunner {
         this.lateralPID = lateralPID;
         this.headingPID = headingPID;
         pidLineController = new PIDLineController(lateralPID, headingPID, trackWidth, constraintSet.getLateralComponentScalar());
-        endpointController = new EndpointController(lateralPID, headingPID, naturalDecel);
+        endpointEstimator = new EndpointEstimator(lateralPID, headingPID, naturalDecel);
+        pidPointController = new PIDPointController(lateralPID, headingPID, trackWidth);
         this.constraintSet = constraintSet;
     }
 
@@ -70,11 +73,22 @@ public class TrajectorySequenceRunner {
         motorPowers.setStrafeScalar(constraintSet.getStrafeScalar());
 
         switch (followState) {
-            case FOLLOW_TRAJECTORY:
+            case FOLLOW_TRAJECTORY -> {
+                trajectorySequence.getCurrentTrajectory().updateTargetPoint(poseEstimate);
+                trajectorySequence.updateGlobalTemporalMarkers();
+                pidLineController.calculatePowers(poseEstimate, poseVelocity, trajectorySequence.getCurrentTrajectory().getTargetDirectionalPose(), motorPowers);
+                if (trajectorySequence.getCurrentTrajectory().targetEndpoint()) {//trajectorySequence.getCurrentTrajectory().targetEndpoint()
+                    targetPose = trajectorySequence.getCurrentTrajectory().endPose();
+//                    followState = FollowState.NO_TRAJECTORY;
+
+                    followState = FollowState.TARGET_END_POINT;
+                }
+            }
+            case POINT_TURN -> {
                 trajectorySequence.getCurrentTrajectory().updateTargetPoint(poseEstimate);
                 trajectorySequence.updateGlobalTemporalMarkers();
 
-                 pidLineController.calculatePowers(poseEstimate, poseVelocity, trajectorySequence.getCurrentTrajectory().getTargetDirectionalPose(), motorPowers);
+                pidPointController.calculatePowers(poseEstimate, poseVelocity, trajectorySequence.getCurrentTrajectory().getTargetPose(), motorPowers);
 
                 if (trajectorySequence.getCurrentTrajectory().targetEndpoint()) {//trajectorySequence.getCurrentTrajectory().targetEndpoint()
                     targetPose = trajectorySequence.getCurrentTrajectory().endPose();
@@ -82,29 +96,23 @@ public class TrajectorySequenceRunner {
 
                     followState = FollowState.TARGET_END_POINT;
                 }
-
-                break;
-            case POINT_TURN:
-                //tbd
-                //might use index marker to trigger
-                break;
-            case TARGET_END_POINT:
+            }
+            case TARGET_END_POINT -> {
                 trajectorySequence.getCurrentTrajectory().updateTargetPoint(poseEstimate);
                 trajectorySequence.updateGlobalTemporalMarkers();
-
-                endpointController.calculatePowers(poseEstimate, poseVelocity, trajectorySequence.getCurrentTrajectory().endPose(), motorPowers);
+                endpointEstimator.updateEndPos(poseEstimate, poseVelocity);
+                pidPointController.calculatePowers(endpointEstimator.getEstimatedEndPos(), endpointEstimator.getEstimatedEndVel(), targetPose, motorPowers);
 
                 //stops targeting endpoint if robot is close enough and has a low velocity
                 if (poseEstimate.minus(targetPose).inRange(trajectorySequence.getCurrentTrajectory().getEndError()) && poseVelocity.inRange(new Pose2d(.5, .5, .5))) {
-                    delayTime = Math.max(trajectorySequence.getCurrentTrajectory().getMinTime()-trajectoryTime.seconds(), trajectorySequence.getCurrentTrajectory().getEndDelay());
+                    delayTime = Math.max(trajectorySequence.getCurrentTrajectory().getMinTime() - trajectoryTime.seconds(), trajectorySequence.getCurrentTrajectory().getEndDelay());
                     trajectoryTime.reset();
                     followState = FollowState.NEXT_TRAJECTORY_DELAY;
                 }
-                break;
-            case NEXT_TRAJECTORY_DELAY:
-//                motorPowers = pidController.calculatePowers(poseEstimate, poseVelocity, poseAcceleration, targetPose, new Pose2d(0, 0 ,0));
-
-                if (trajectoryTime.seconds()>delayTime) {
+            }
+            case NEXT_TRAJECTORY_DELAY -> {
+                pidPointController.calculatePowers(poseEstimate, poseVelocity, targetPose, motorPowers);
+                if (trajectoryTime.seconds() > delayTime) {
                     trajectorySequence.nextTrajectory();
 
                     if (trajectorySequence.isFinished()) {
@@ -118,15 +126,15 @@ public class TrajectorySequenceRunner {
                         followState = FollowState.POINT_TURN;
                     }
                 }
-                break;
+            }
         }
 
         lastMotorPowers = motorPowers;
         return motorPowers;
     }
 
-    public EndpointController getEndpointController() {
-        return endpointController;
+    public EndpointEstimator getEndpointController() {
+        return endpointEstimator;
     }
 
     public TrajectorySequence getTrajectorySequence() {
