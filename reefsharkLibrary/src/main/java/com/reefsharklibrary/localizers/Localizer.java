@@ -15,7 +15,10 @@ public class Localizer {
 
 
     public void update() {
-        poseEstimate = poseEstimate.plus(solver.getRelativeFieldMovement(deltaFinder.getRelDeltas(), poseEstimate));
+        deltaFinder.update();
+        poseEstimate = poseEstimate.plus(solver.getRelativeFieldMovement(deltaFinder.getDeltaX(), deltaFinder.getDeltaY(), deltaFinder.getDeltaHeading(), poseEstimate));
+
+        Math.s
     }
 
 
