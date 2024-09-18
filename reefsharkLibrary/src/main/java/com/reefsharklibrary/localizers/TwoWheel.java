@@ -1,53 +1,52 @@
 package com.reefsharklibrary.localizers;
 
+import com.reefsharklibrary.data.Point;
 import com.reefsharklibrary.data.TimePose2d;
+import com.reefsharklibrary.misc.ElapsedTimer;
+import com.reefsharklibrary.pathing.data.MarkerExecutable;
 
 public class TwoWheel implements DeltaFinder {
 
     private final double perpendicularX;
     private final double parallelY;
 
-    private TimePose2d prevPosition;
-    private TimePose2d delta;
-    private TimePose2d relDelta;
+    private Point X, Y, deltaH;
+    private Point H = new Point(0, 0);
 
     public TwoWheel(double perpendicularX, double parallelY) {
         this.perpendicularX = perpendicularX;
         this.parallelY = parallelY;
 
-        prevPosition = new TimePose2d(0, 0, 0);
+
     }
 
-    public void update(TimePose2d position) {
-        delta = position.elapsedTimeMinus(prevPosition);
-        prevPosition = position;
+    public void update(Point rawX, Point rawY, Point rawHeading) {
 
-        relDelta = new TimePose2d(
-                delta.getX()-perpendicularX * delta.getHeading(),
-                delta.getY()-parallelY * delta.getHeading(),
-                delta.getHeading(),
-                delta.getTime()
-        );
-    }
+        deltaH = new Point(rawHeading.getVal() - H.getVal(), rawHeading.getTime());
+        X = new Point(rawX.getVal() - perpendicularX * deltaH.getVal(), rawX.getTime());
+        Y = new Point(rawY.getVal() - parallelY * deltaH.getVal(), rawY.getTime());
+        H = rawHeading;
 
-    public void update(double parallel, double perpendicular, double heading, long time) {
-        update(new TimePose2d(parallel, perpendicular, heading, time));
-    }
-
-    public void update(double parallel, double perpendicular, double heading) {
-        update(new TimePose2d(parallel, perpendicular, heading));
     }
 
 
     @Override
-    public TimePose2d getDeltas() {
-        return delta;
+    public Point getDeltaX() {
+        return X;
     }
 
     @Override
-    public TimePose2d getRelDeltas() {
-        return relDelta;
+    public Point getDeltaY() {
+        return Y;
     }
 
+    @Override
+    public Point getDeltaHeading() {
+        return deltaH;
+    }
 
+    @Override
+    public Point getHeading() {
+        return H;
+    }
 }

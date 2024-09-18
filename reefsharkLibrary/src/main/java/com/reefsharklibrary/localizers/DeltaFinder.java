@@ -14,13 +14,15 @@ public interface DeltaFinder {
 //
 //    TimePose2d getRelDeltas();
 
-    void update();
+    void update(Point rawX, Point rawY, Point rawHeading);
 
-    List<Point> getDeltaX();
+    Point getDeltaX();
 
-    List<Point> getDeltaY();
+    Point getDeltaY();
 
-    List<Point> getDeltaHeading();
+    Point getDeltaHeading();
+
+    Point getHeading();
 
 
 }
