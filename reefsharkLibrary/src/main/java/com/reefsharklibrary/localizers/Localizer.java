@@ -10,7 +10,7 @@ public class Localizer {
     private final DeltaFinder deltaFinder;
     private final Solver solver;
 
-    private TimePose2d poseEstimate;
+    private TimePose2d poseEstimate = new TimePose2d(new Pose2d(0, 0, 0), 0);
     private int maxHistorySize = 200;
 
     private LinkedList<TimePose2d> prevPositions = new LinkedList<>();
@@ -26,7 +26,9 @@ public class Localizer {
 
     public void update(Point rawX, Point rawY, Point rawHeading) {
         deltaFinder.update(rawX, rawY, rawHeading);
-        poseEstimate = new TimePose2d(poseEstimate.plus(solver.getRelativeFieldMovement(deltaFinder.getDeltaX(),
+//        poseEstimate = new TimePose2d(poseEstimate.plus(solver.getRelativeFieldMovement(deltaFinder.getDeltaX(),
+//                            deltaFinder.getDeltaY(), deltaFinder.getDeltaHeading()).toPose(deltaFinder.getHeading().getVal())), (long)(deltaFinder.getHeading().getVal()) * 1000);
+        poseEstimate = new TimePose2d((solver.getRelativeFieldMovement(deltaFinder.getDeltaX(),
                 deltaFinder.getDeltaY(), deltaFinder.getDeltaHeading()).toPose(deltaFinder.getHeading().getVal())), (long)(deltaFinder.getHeading().getVal()) * 1000);
         prevPositions.add(poseEstimate);
         updatePoseVelocitiy();

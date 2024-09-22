@@ -19,34 +19,39 @@ public class ConstantAccelSolver implements Solver {
 
     double prevTime = 0;
 
+    double A, B, C, D, E, F, G;
+
 
 
     public ConstantAccelSolver() {
-        deltaXList.add(new Point(0, 0));
-        deltaXList.add(new Point(0, 0));
-        deltaXList.add(new Point(0, 0));
+        deltaXList.add(new Point(-6, .5));
+        deltaXList.add(new Point(-3, 1.4));
+        deltaXList.add(new Point(5, 3));
 
-        deltaYList.add(new Point(0, 0));
-        deltaYList.add(new Point(0, 0));
-        deltaYList.add(new Point(0, 0));
+        deltaYList.add(new Point(1, 1));
+        deltaYList.add(new Point(-5, 2));
+        deltaYList.add(new Point(3, 4));
 
-        deltaHList.add(new Point(0, 0));
-        deltaHList.add(new Point(0, 0));
-        deltaHList.add(new Point(0, 0));
+        deltaHList.add(new Point(-1.96, .12));
+        deltaHList.add(new Point(0.25, 1));
+        deltaHList.add(new Point(2.08, 2));
     }
 
 
     @Override
     public Vector2d getRelativeFieldMovement(Point deltaX, Point deltaY, Point deltaHeading) {
+        if (!Double.isFinite(deltaX.getVal()) || !Double.isFinite(deltaY.getVal()) || !Double.isFinite(deltaHeading.getVal())) {
+            throw new RuntimeException("non finite raw deltas: " + deltaX.getVal() + ", " + deltaY.getVal() );
+        }
 
 
-        deltaXList.removeFirst();
-        deltaYList.removeFirst();
-        deltaHList.removeFirst();
-
-        deltaYList.add(deltaY);
-        deltaXList.add(deltaX);
-        deltaHList.add(deltaHeading);
+//        deltaXList.removeFirst();
+//        deltaYList.removeFirst();
+//        deltaHList.removeFirst();
+//
+//        deltaYList.add(deltaY);
+//        deltaXList.add(deltaX);
+//        deltaHList.add(deltaHeading);
 
         for (int i = 0; i <3; i ++) {
             deltaYList.get(i).setTimeOffset(prevTime);
@@ -55,19 +60,49 @@ public class ConstantAccelSolver implements Solver {
         }
 
 
-        double A = getA();
-        double B = getB();
-        double C = getC();
-        double D = getD();
-        double E = getE();
-        double F = getF();
-        double G = getG();
+        A = getA();
+        int direction = 1;
+        if (A < 0) {
+            direction = -1;
+            A = -A;
+        }
+        if (!Double.isFinite(A)) {
+            throw new RuntimeException("A");
+        }
+        B = direction * getB();
+
+        if (!Double.isFinite(B)) {
+            throw new RuntimeException("B");
+        }
+        C = direction * getC();
+        if (!Double.isFinite(C)) {
+            throw new RuntimeException("C");
+        }
+        D = direction * getD();
+        if (!Double.isFinite(D)) {
+            throw new RuntimeException("D");
+        }
+        E = direction * getE();
+        if (!Double.isFinite(E)) {
+            throw new RuntimeException("E");
+        }
+        F = getF();
+        if (!Double.isFinite(F)) {
+            throw new RuntimeException("F");
+        }
+        G = getG();
+        if (!Double.isFinite(G)) {
+            throw new RuntimeException("G");
+        }
         double K = getK();
+        if (!Double.isFinite(K)) {
+            throw new RuntimeException("K");
+        }
 
         double finalTime = getFinalTime();
 
-        double Uf = (Math.sqrt(A) * finalTime) + (0.5 * Math.sqrt(A) * B);
-        double Ui =  (0.5 * Math.sqrt(A) * B);
+        double Uf = Math.sqrt(A) * finalTime + divideTerms(B, 2 * Math.sqrt(A));
+        double Ui =  (divideTerms(B, 2 * Math.sqrt(A)));
 
         double ABCf = A * Math.pow(finalTime, 2) + B * finalTime + C;
 
@@ -76,70 +111,73 @@ public class ConstantAccelSolver implements Solver {
         double sinC = Math.sin(C);
         double cosC = Math.cos(C);
 
-        double D2A = D / (2 * A);
-        double F2A = F / (2 * A);
+        double D2A = divideTerms(D, (2 * A));
+        double F2A = divideTerms(F,  (2 * A));
 
-        double EBD = (E - (B * D2A)) / Math.sqrt(A);
-        double GBF = (G - (B * F2A)) / Math.sqrt(A);
+        double EBD = divideTerms(E - (B * D2A), Math.sqrt(A));
+        double GBF = divideTerms(G - (B * F2A), Math.sqrt(A));
 
         double cosK = Math.cos(K);
         double sinK = Math.sin(K);
 
-        double fresnelCos = FresnelEstimator.C(Uf) - FresnelEstimator.C(Ui);
-        double fresnelSin = FresnelEstimator.S(Uf) - FresnelEstimator.S(Ui);
+        double fresnelCos = FresnelEstimator.C(Math.sqrt(2/Math.PI) * Uf) - FresnelEstimator.C(Math.sqrt(2/Math.PI) * Ui);
+        double fresnelSin = FresnelEstimator.S(Math.sqrt(2/Math.PI) * Uf)  - FresnelEstimator.S(Math.sqrt(2/Math.PI) * Ui);
 
-        double fieldDeltaX = (D2A * sinABCf) - (D2A * sinC) + (EBD * (-sinK * fresnelSin + cosK * fresnelCos))
-                            - ((-F2A * cosABCf)) + (F2A * cosC) + (GBF * (sinK * fresnelCos + cosK * fresnelSin));
+//        double fieldDeltaX = direction * ((D2A * sinABCf) - (D2A * sinC) + (EBD * ((-sinK * fresnelSin) + cosK * fresnelCos))
+//                            - ((-F2A * cosABCf)) + (F2A * cosC) + (GBF * (sinK * fresnelCos + cosK * fresnelSin)));
+
+        double fieldDeltaX = (D2A * sinABCf) - (D2A * sinC);
 
         double fieldDeltaY = ((-D2A * cosABCf) + (D2A * cosC) + (EBD * (sinK * fresnelCos + cosK * fresnelSin)))
                             - ((F2A * sinABCf) - (F2A * sinC) + (GBF * (-sinK * fresnelSin + cosK * fresnelCos)));
 
-        prevTime += finalTime;
+//        prevTime += finalTime;
+
+
+        if (!Double.isFinite(fieldDeltaX)|| !Double.isFinite(fieldDeltaY)) {
+            throw new RuntimeException("non finite pose deltas: " + fieldDeltaX + ", " + fieldDeltaY );
+        }
 
         return new Vector2d(fieldDeltaX, fieldDeltaY);
     }
 
     private double getA () {
         return  (
-                deltaHList.get(0).getTime() / ( (deltaHList.get(0).getVal() - deltaHList.get(1).getVal()) * (deltaHList.get(0).getVal() - deltaHList.get(2).getVal()))
-                + deltaHList.get(1).getTime() / ( (deltaHList.get(1).getVal() - deltaHList.get(0).getVal()) * (deltaHList.get(1).getVal() - deltaHList.get(2).getVal()))
-                + deltaHList.get(2).getTime() / ( (deltaHList.get(2).getVal() - deltaHList.get(0).getVal()) * (deltaHList.get(2).getVal() - deltaHList.get(1).getVal()))
+                divideTerms (deltaHList.get(0).getTime(),  ( (deltaHList.get(0).getVal() - deltaHList.get(1).getVal()) * (deltaHList.get(0).getVal() - deltaHList.get(2).getVal())))
+                + divideTerms(deltaHList.get(1).getTime(), ( (deltaHList.get(1).getVal() - deltaHList.get(0).getVal()) * (deltaHList.get(1).getVal() - deltaHList.get(2).getVal())))
+                + divideTerms(deltaHList.get(2).getTime(), ( (deltaHList.get(2).getVal() - deltaHList.get(0).getVal()) * (deltaHList.get(2).getVal() - deltaHList.get(1).getVal())))
         );
     }
 
     private double getB() {
         return (
-                (deltaHList.get(0).getTime() * 2) / ( (deltaHList.get(0).getVal() - deltaHList.get(1).getVal()) * (deltaHList.get(0).getVal() - deltaHList.get(2).getVal()))
-                + (deltaHList.get(1).getTime() * 2) / ( (deltaHList.get(1).getVal() - deltaHList.get(0).getVal()) * (deltaHList.get(1).getVal() - deltaHList.get(2).getVal()))
-                + (deltaHList.get(2).getTime() * 2) / ( (deltaHList.get(2).getVal() - deltaHList.get(0).getVal()) * (deltaHList.get(2).getVal() - deltaHList.get(1).getVal()))
-                - (deltaHList.get(0).getTime() * (deltaHList.get(1).getVal() + deltaHList.get(2).getVal())) / ( (deltaHList.get(0).getVal() - deltaHList.get(1).getVal()) * (deltaHList.get(0).getVal() - deltaHList.get(2).getVal()))
-                - (deltaHList.get(1).getTime() * (deltaHList.get(0).getVal() + deltaHList.get(2).getVal())) / ( (deltaHList.get(1).getVal() - deltaHList.get(0).getVal()) * (deltaHList.get(1).getVal() - deltaHList.get(2).getVal()))
-                - (deltaHList.get(2).getTime() * (deltaHList.get(0).getVal() + deltaHList.get(1).getVal())) / ( (deltaHList.get(2).getVal() - deltaHList.get(0).getVal()) * (deltaHList.get(2).getVal() - deltaHList.get(1).getVal()))
+                divideTerms(deltaHList.get(0).getTime() * 2,  (deltaHList.get(0).getVal() - deltaHList.get(1).getVal()) * (deltaHList.get(0).getVal() - deltaHList.get(2).getVal()))
+                + divideTerms(deltaHList.get(1).getTime() * 2, (deltaHList.get(1).getVal() - deltaHList.get(0).getVal()) * (deltaHList.get(1).getVal() - deltaHList.get(2).getVal()))
+                + divideTerms(deltaHList.get(2).getTime() * 2,  (deltaHList.get(2).getVal() - deltaHList.get(0).getVal()) * (deltaHList.get(2).getVal() - deltaHList.get(1).getVal()))
+                - divideTerms(deltaHList.get(0).getTime() * (deltaHList.get(1).getVal() + deltaHList.get(2).getVal()),  (deltaHList.get(0).getVal() - deltaHList.get(1).getVal()) * (deltaHList.get(0).getVal() - deltaHList.get(2).getVal()))
+                - divideTerms(deltaHList.get(1).getTime() * (deltaHList.get(0).getVal() + deltaHList.get(2).getVal()),  (deltaHList.get(1).getVal() - deltaHList.get(0).getVal()) * (deltaHList.get(1).getVal() - deltaHList.get(2).getVal()))
+                - divideTerms(deltaHList.get(2).getTime() * (deltaHList.get(0).getVal() + deltaHList.get(1).getVal()),  (deltaHList.get(2).getVal() - deltaHList.get(0).getVal()) * (deltaHList.get(2).getVal() - deltaHList.get(1).getVal()))
         );
     }
 
     private double getC() {
-        double h1 = deltaHList.get(0).getVal();
-        double h2 = deltaHList.get(1).getVal();
-        double h3 = deltaHList.get(2).getVal();
-        double th1 = deltaHList.get(0).getTime();
-        double th2 = deltaHList.get(1).getTime();
-        double th3 = deltaHList.get(2).getTime();
 
-        return ( ((h2 * h3 * th1) / ((h1 - h2) * (h1 - h3)))
-                + ((h1 * h3 * th2) / ((h2 - h1) * (h2 - h3)))
-                + ((h1 * h2 * th3) / ((h3 - h1) * (h3 - h2)))
-                - (((h2 + h3) * th1) / ((h1 - h2) * (h1 - h3)))
-                - (((h1 + h3) * th2) / ((h2 - h1) * (h2 - h3)))
-                - (((h1 + h2) * th3) / ((h3 - h1) * (h3 - h2)))
+
+        return (
+                divideTerms(deltaHList.get(1).getVal() * deltaHList.get(2).getVal() * deltaHList.get(0).getTime(), (deltaHList.get(0).getVal() - deltaHList.get(1).getVal()) * (deltaHList.get(0).getVal() - deltaHList.get(2).getVal()))
+                + divideTerms(deltaHList.get(0).getVal() * deltaHList.get(2).getVal() * deltaHList.get(1).getTime(), (deltaHList.get(1).getVal() - deltaHList.get(0).getVal()) * (deltaHList.get(1).getVal() - deltaHList.get(2).getVal()))
+                + divideTerms(deltaHList.get(0).getVal() * deltaHList.get(1).getVal() * deltaHList.get(2).getTime(), (deltaHList.get(2).getVal() - deltaHList.get(0).getVal()) * (deltaHList.get(2).getVal() - deltaHList.get(1).getVal()))
+                + divideTerms((deltaHList.get(1).getVal() + deltaHList.get(2).getVal()) * deltaHList.get(0).getTime() * -1, (deltaHList.get(0).getVal() - deltaHList.get(1).getVal()) * (deltaHList.get(0).getVal() - deltaHList.get(2).getVal()))
+                + divideTerms((deltaHList.get(0).getVal() + deltaHList.get(2).getVal()) * deltaHList.get(1).getTime() * -1, (deltaHList.get(1).getVal() - deltaHList.get(0).getVal()) * (deltaHList.get(1).getVal() - deltaHList.get(2).getVal()))
+                + divideTerms((deltaHList.get(0).getVal() + deltaHList.get(1).getVal()) * deltaHList.get(2).getTime() * -1,(deltaHList.get(2).getVal() - deltaHList.get(0).getVal()) * (deltaHList.get(2).getVal() - deltaHList.get(1).getVal()))
         );
     }
 
     private double getD() {
         return (
-                (2 * deltaXList.get(0).getTime()) / ( (deltaXList.get(0).getVal() - deltaXList.get(1).getVal()) * (deltaXList.get(0).getVal() - deltaXList.get(2).getVal()))
-                + (2 * deltaXList.get(1).getTime()) / ( (deltaXList.get(1).getVal() - deltaXList.get(0).getVal()) * (deltaXList.get(1).getVal() - deltaXList.get(2).getVal()))
-                + (2 * deltaXList.get(2).getTime()) / ( (deltaXList.get(2).getVal() - deltaXList.get(0).getVal()) * (deltaXList.get(2).getVal() - deltaXList.get(1).getVal()))
+                (divideTerms(2 * deltaXList.get(0).getTime(),  (deltaXList.get(0).getVal() - deltaXList.get(1).getVal()) * (deltaXList.get(0).getVal() - deltaXList.get(2).getVal()))
+                + divideTerms(2 * deltaXList.get(1).getTime(),  (deltaXList.get(1).getVal() - deltaXList.get(0).getVal()) * (deltaXList.get(1).getVal() - deltaXList.get(2).getVal()))
+                + divideTerms(2 * deltaXList.get(2).getTime(), (deltaXList.get(2).getVal() - deltaXList.get(0).getVal()) * (deltaXList.get(2).getVal() - deltaXList.get(1).getVal())))
         );
     }
 
@@ -151,17 +189,18 @@ public class ConstantAccelSolver implements Solver {
         double tx2 = deltaXList.get(1).getTime();
         double tx3 = deltaXList.get(2).getTime();
 
-        return ( ((-1 * (x2 + x3) * tx1) / ((x1 - x2) * (x1 - x3)))
-                - (( (x1 + x3) * tx2) / ((x2 - x1) * (x2 - x3)))
-                - (((x1 + x2) * tx3) / ((x3 - x1) * (x3 - x2)))
+        return (
+                divideTerms(-1 * (x2 + x3) * tx1,  (x1 - x2) * (x1 - x3))
+                - divideTerms( (x1 + x3) * tx2, (x2 - x1) * (x2 - x3))
+                - divideTerms((x1 + x2) * tx3,  (x3 - x1) * (x3 - x2))
         );
     }
 
     private double getF() {
         return (
-                (2 * deltaYList.get(0).getTime()) / ( (deltaYList.get(0).getVal() - deltaYList.get(1).getVal()) * (deltaYList.get(0).getVal() - deltaYList.get(2).getVal()))
-                + (2 * deltaYList.get(1).getTime()) / ( (deltaYList.get(1).getVal() - deltaYList.get(0).getVal()) * (deltaYList.get(1).getVal() - deltaYList.get(2).getVal()))
-                + (2 * deltaYList.get(2).getTime()) / ( (deltaYList.get(2).getVal() - deltaYList.get(0).getVal()) * (deltaYList.get(2).getVal() - deltaYList.get(1).getVal()))
+                divideTerms(2 * deltaYList.get(0).getTime(),  (deltaYList.get(0).getVal() - deltaYList.get(1).getVal()) * (deltaYList.get(0).getVal() - deltaYList.get(2).getVal()))
+                + divideTerms(2 * deltaYList.get(1).getTime(),  (deltaYList.get(1).getVal() - deltaYList.get(0).getVal()) * (deltaYList.get(1).getVal() - deltaYList.get(2).getVal()))
+                + divideTerms(2 * deltaYList.get(2).getTime(), (deltaYList.get(2).getVal() - deltaYList.get(0).getVal()) * (deltaYList.get(2).getVal() - deltaYList.get(1).getVal()))
         );
     }
 
@@ -173,18 +212,28 @@ public class ConstantAccelSolver implements Solver {
         double ty2 = deltaYList.get(1).getTime();
         double ty3 = deltaYList.get(2).getTime();
 
-        return ( ((-1 * (y2 + y3) * ty1) / ((y1 - y2) * (y1 - y3)))
-                + ((-1 * (y1 + y3) * ty2) / ((y2 - y1) * (y2 - y3)))
-                + ((-1 * (y1 + y2) * ty3) / ((y3 - y1) * (y3 - y2)))
+        return (
+                divideTerms(-1 * (y2 + y3) * ty1, (y1 - y2) * (y1 - y3))
+                + divideTerms(-1 * (y1 + y3) * ty2, (y2 - y1) * (y2 - y3))
+                + divideTerms(-1 * (y1 + y2) * ty3, (y3 - y1) * (y3 - y2))
         );
     }
 
     private double getK() {
-        return (getC() - Math.pow( ( 1 / (2 * Math.sqrt(getA())) ) * getB(), 2));
+        if (!Double.isFinite(Math.sqrt(A)))
+            throw new RuntimeException("K during" + Math.sqrt(A));
+        return (C - Math.pow(divideTerms(1, 2 * Math.sqrt(A)) * B, 2));
+//        return (C - Math.pow(divideTerms(1,  2 * Math.sqrt(A)) * B, 2));
     }
 
     private double getFinalTime() {
         return Math.min(deltaXList.get(2).getTime(), Math.min(deltaYList.get(2).getTime(), deltaHList.get(2).getTime()));
+    }
+
+    private double divideTerms(double num, double den) {
+        if (den == 0)
+            return 0;
+        return num/den;
     }
 
     @Override
