@@ -24,17 +24,29 @@ public class ConstantAccelSolver implements Solver {
 
 
     public ConstantAccelSolver() {
-        deltaXList.add(new Point(-6, .5));
-        deltaXList.add(new Point(-3, 1.4));
-        deltaXList.add(new Point(5, 3));
+//        deltaXList.add(new Point(-6, .5));
+//        deltaXList.add(new Point(-3, 1.4));
+//        deltaXList.add(new Point(5, 3));
+//
+//        deltaYList.add(new Point(1, 1));
+//        deltaYList.add(new Point(-5, 2));
+//        deltaYList.add(new Point(3, 4));
+//
+//        deltaHList.add(new Point(-1.96, 0.12));
+//        deltaHList.add(new Point(1.55, 0.21));
+//        deltaHList.add(new Point(0.12, 0.84));
 
-        deltaYList.add(new Point(1, 1));
-        deltaYList.add(new Point(-5, 2));
-        deltaYList.add(new Point(3, 4));
+        deltaXList.add(new Point(0, 0));
+        deltaXList.add(new Point(0, 0));
+        deltaXList.add(new Point(0, 0));
 
-        deltaHList.add(new Point(-1.96, .12));
-        deltaHList.add(new Point(0.25, 1));
-        deltaHList.add(new Point(2.08, 2));
+        deltaYList.add(new Point(0, 0));
+        deltaYList.add(new Point(0, 0));
+        deltaYList.add(new Point(0, 0));
+
+        deltaHList.add(new Point(0, 0));
+        deltaHList.add(new Point(0, 0));
+        deltaHList.add(new Point(0, 0));
     }
 
 
@@ -45,13 +57,13 @@ public class ConstantAccelSolver implements Solver {
         }
 
 
-//        deltaXList.removeFirst();
-//        deltaYList.removeFirst();
-//        deltaHList.removeFirst();
-//
-//        deltaYList.add(deltaY);
-//        deltaXList.add(deltaX);
-//        deltaHList.add(deltaHeading);
+        deltaXList.removeFirst();
+        deltaYList.removeFirst();
+        deltaHList.removeFirst();
+
+        deltaYList.add(deltaY);
+        deltaXList.add(deltaX);
+        deltaHList.add(deltaHeading);
 
         for (int i = 0; i <3; i ++) {
             deltaYList.get(i).setTimeOffset(prevTime);
@@ -99,7 +111,7 @@ public class ConstantAccelSolver implements Solver {
             throw new RuntimeException("K");
         }
 
-        double finalTime = getFinalTime();
+        double finalTime = getFinalTime() - prevTime;
 
         double Uf = Math.sqrt(A) * finalTime + divideTerms(B, 2 * Math.sqrt(A));
         double Ui =  (divideTerms(B, 2 * Math.sqrt(A)));
@@ -123,15 +135,15 @@ public class ConstantAccelSolver implements Solver {
         double fresnelCos = FresnelEstimator.C(Math.sqrt(2/Math.PI) * Uf) - FresnelEstimator.C(Math.sqrt(2/Math.PI) * Ui);
         double fresnelSin = FresnelEstimator.S(Math.sqrt(2/Math.PI) * Uf)  - FresnelEstimator.S(Math.sqrt(2/Math.PI) * Ui);
 
-//        double fieldDeltaX = direction * ((D2A * sinABCf) - (D2A * sinC) + (EBD * ((-sinK * fresnelSin) + cosK * fresnelCos))
-//                            - ((-F2A * cosABCf)) + (F2A * cosC) + (GBF * (sinK * fresnelCos + cosK * fresnelSin)));
 
-        double fieldDeltaX = (D2A * sinABCf) - (D2A * sinC);
+        double fieldDeltaX = direction * ((D2A * sinABCf) - (D2A * sinC) + (EBD * ((-sinK * fresnelSin) + cosK * fresnelCos))
+                            - ((-F2A * cosABCf) + (F2A * cosC) + (GBF * (sinK * fresnelCos + cosK * fresnelSin))));
+
 
         double fieldDeltaY = ((-D2A * cosABCf) + (D2A * cosC) + (EBD * (sinK * fresnelCos + cosK * fresnelSin)))
                             - ((F2A * sinABCf) - (F2A * sinC) + (GBF * (-sinK * fresnelSin + cosK * fresnelCos)));
 
-//        prevTime += finalTime;
+        prevTime += finalTime;
 
 
         if (!Double.isFinite(fieldDeltaX)|| !Double.isFinite(fieldDeltaY)) {
