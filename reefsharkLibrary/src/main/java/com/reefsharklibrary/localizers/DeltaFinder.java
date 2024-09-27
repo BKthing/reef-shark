@@ -16,13 +16,17 @@ public interface DeltaFinder {
 
     void update(Point rawX, Point rawY, Point rawHeading);
 
+    void clearDeltas(Point rawX, Point rawY, Point rawHeading);
+
     Point getDeltaX();
 
     Point getDeltaY();
 
     Point getDeltaHeading();
 
-    Point getHeading();
+    double getChangeHeading();
+
+//    Point getHeading();
 
 
 }

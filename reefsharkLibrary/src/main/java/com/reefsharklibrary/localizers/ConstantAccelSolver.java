@@ -2,6 +2,7 @@ package com.reefsharklibrary.localizers;
 
 import com.reefsharklibrary.data.Point;
 import com.reefsharklibrary.data.Pose2d;
+import com.reefsharklibrary.data.TimePose2d;
 import com.reefsharklibrary.data.Vector2d;
 
 import java.util.ArrayList;
@@ -111,12 +112,12 @@ public class ConstantAccelSolver implements Solver {
             throw new RuntimeException("K");
         }
 
-        double finalTime = getFinalTime() - prevTime;
+        double changeInTime = getFinalTime() - prevTime;
 
-        double Uf = Math.sqrt(A) * finalTime + divideTerms(B, 2 * Math.sqrt(A));
+        double Uf = Math.sqrt(A) * changeInTime + divideTerms(B, 2 * Math.sqrt(A));
         double Ui =  (divideTerms(B, 2 * Math.sqrt(A)));
 
-        double ABCf = A * Math.pow(finalTime, 2) + B * finalTime + C;
+        double ABCf = A * Math.pow(changeInTime, 2) + B * changeInTime + C;
 
         double sinABCf = Math.sin(ABCf);
         double cosABCf = Math.cos(ABCf);
@@ -143,7 +144,7 @@ public class ConstantAccelSolver implements Solver {
         double fieldDeltaY = ((-D2A * cosABCf) + (D2A * cosC) + (EBD * (sinK * fresnelCos + cosK * fresnelSin)))
                             - ((F2A * sinABCf) - (F2A * sinC) + (GBF * (-sinK * fresnelSin + cosK * fresnelCos)));
 
-        prevTime += finalTime;
+        prevTime += changeInTime;
 
 
         if (!Double.isFinite(fieldDeltaX)|| !Double.isFinite(fieldDeltaY)) {
@@ -255,25 +256,54 @@ public class ConstantAccelSolver implements Solver {
 
     @Override
     public void setPoseEstimate(Pose2d pose) {
+        setPoseEstimate(new TimePose2d(pose, prevTime));
+    }
+
+    //sets pose estimate while reseting robot velocities and accelerations
+    @Override
+    public void setPoseEstimate(TimePose2d pose) {
         deltaXList.clear();
         deltaYList.clear();
         deltaHList.clear();
-        prevTime = 0;
 
-        deltaXList.add(new Point(pose.getX(), 0));
-        deltaXList.add(new Point(pose.getX(), 0));
-        deltaXList.add(new Point(pose.getX(), 0));
+        prevTime = pose.getTime();
 
-        deltaYList.add(new Point(pose.getY(), 0));
-        deltaYList.add(new Point(pose.getY(), 0));
-        deltaYList.add(new Point(pose.getY(), 0));
+        deltaXList.add(new Point(pose.getX(), prevTime));
+        deltaXList.add(new Point(pose.getX(), prevTime));
+        deltaXList.add(new Point(pose.getX(), prevTime));
 
-        deltaHList.add(new Point(pose.getHeading(), 0));
-        deltaHList.add(new Point(pose.getHeading(), 0));
-        deltaHList.add(new Point(pose.getHeading(), 0));
+        deltaYList.add(new Point(pose.getY(), prevTime));
+        deltaYList.add(new Point(pose.getY(), prevTime));
+        deltaYList.add(new Point(pose.getY(), prevTime));
+
+        deltaHList.add(new Point(pose.getHeading(), prevTime));
+        deltaHList.add(new Point(pose.getHeading(), prevTime));
+        deltaHList.add(new Point(pose.getHeading(), prevTime));
 
 
     }
 
+    @Override
+    public void updatePoseEstimate(Pose2d pose) {
+        updatePoseEstimate(new TimePose2d(pose, prevTime));
+    }
 
+    //sets pose estimate while preserving robot velocities and accelerations
+    @Override
+    public void updatePoseEstimate(TimePose2d pose) {
+        Pose2d deltaPose = new Pose2d(pose.getX()-deltaXList.get(2).getVal(), pose.getY()-deltaYList.get(2).getVal(), pose.getHeading()-deltaHList.get(2).getVal());
+
+        deltaXList.set(0, new Point(deltaXList.get(1).getVal()+deltaPose.getX(), deltaXList.get(1).getTime()));
+        deltaXList.set(1, new Point(deltaXList.get(2).getVal()+deltaPose.getX(), deltaXList.get(2).getTime()));
+        deltaXList.set(2, new Point(pose.getX(), pose.getTime()));
+
+        deltaYList.set(0, new Point(deltaYList.get(1).getVal()+deltaPose.getY(), deltaYList.get(1).getTime()));
+        deltaYList.set(1, new Point(deltaYList.get(2).getVal()+deltaPose.getY(), deltaYList.get(2).getTime()));
+        deltaYList.set(2, new Point(pose.getY(), pose.getTime()));
+
+        deltaHList.set(0, new Point(deltaHList.get(1).getVal()+deltaPose.getHeading(), deltaHList.get(1).getTime()));
+        deltaHList.set(1, new Point(deltaHList.get(2).getVal()+deltaPose.getHeading(), deltaHList.get(2).getTime()));
+        deltaHList.set(2, new Point(pose.getHeading(), pose.getTime()));
+
+    }
 }

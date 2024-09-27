@@ -1,17 +1,16 @@
 package com.reefsharklibrary.localizers;
 
 import com.reefsharklibrary.data.Point;
-import com.reefsharklibrary.data.TimePose2d;
-import com.reefsharklibrary.misc.ElapsedTimer;
-import com.reefsharklibrary.pathing.data.MarkerExecutable;
 
 public class TwoWheel implements DeltaFinder {
 
     private final double perpendicularX;
     private final double parallelY;
 
-    private Point X, Y, deltaH;
-    private Point H = new Point(0, 0);
+    private Point deltaX, deltaY, deltaH;
+    private double prevRawX = 0, prevRawY = 0, prevRawH = 0;
+
+    private double changeH;
 
     public TwoWheel(double perpendicularX, double parallelY) {
         this.perpendicularX = perpendicularX;
@@ -21,23 +20,32 @@ public class TwoWheel implements DeltaFinder {
     }
 
     public void update(Point rawX, Point rawY, Point rawHeading) {
+        changeH = rawHeading.getVal()- prevRawH;
 
-        deltaH = new Point(rawHeading.getVal() - H.getVal(), rawHeading.getTime());
-        X = new Point(rawX.getVal() - perpendicularX * deltaH.getVal(), rawX.getTime());
-        Y = new Point(rawY.getVal() - parallelY * deltaH.getVal(), rawY.getTime());
-        H = rawHeading;
+        deltaH = new Point(deltaH.getVal()+changeH, rawHeading.getTime());
+        deltaX = new Point(deltaX.getVal() + (rawX.getVal() - prevRawX - perpendicularX * changeH), rawX.getTime());
+        deltaY = new Point(deltaY.getVal() + (rawY.getVal() - prevRawY - parallelY * changeH), rawY.getTime());
 
+        prevRawX = rawX.getVal();
+        prevRawY = rawY.getVal();
+        prevRawH = rawHeading.getVal();
     }
 
+    @Override
+    public void clearDeltas(Point rawX, Point rawY, Point rawHeading) {
+        prevRawX = rawX.getVal();
+        prevRawY = rawY.getVal();
+        prevRawH = rawHeading.getVal();
+    }
 
     @Override
     public Point getDeltaX() {
-        return X;
+        return deltaX;
     }
 
     @Override
     public Point getDeltaY() {
-        return Y;
+        return deltaY;
     }
 
     @Override
@@ -46,7 +54,7 @@ public class TwoWheel implements DeltaFinder {
     }
 
     @Override
-    public Point getHeading() {
-        return H;
+    public double getChangeHeading() {
+        return changeH;
     }
 }

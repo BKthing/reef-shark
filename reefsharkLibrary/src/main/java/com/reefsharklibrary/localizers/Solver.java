@@ -13,4 +13,8 @@ public interface Solver {
     double getPreviousTime();
 
     void setPoseEstimate(Pose2d pose);
+    void setPoseEstimate(TimePose2d pose);
+
+    void updatePoseEstimate(Pose2d pose);
+    void updatePoseEstimate(TimePose2d pose);
 }

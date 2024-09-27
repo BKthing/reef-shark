@@ -28,7 +28,7 @@ public class Localizer {
         deltaFinder.update(rawX, rawY, rawHeading);
 
         poseEstimate = new TimePose2d(poseEstimate.plus(solver.getRelativeFieldMovement(deltaFinder.getDeltaX(),
-                            deltaFinder.getDeltaY(), deltaFinder.getDeltaHeading()).toPose(deltaFinder.getDeltaHeading().getVal())), (solver.getPreviousTime()));
+                            deltaFinder.getDeltaY(), deltaFinder.getDeltaHeading()).toPose(deltaFinder.getChangeHeading())), (solver.getPreviousTime()));
 //        poseEstimate = new TimePose2d((solver.getRelativeFieldMovement(deltaFinder.getDeltaX(),
 //                deltaFinder.getDeltaY(), deltaFinder.getDeltaHeading()).toPose(deltaFinder.getHeading().getVal())), (long)(deltaFinder.getHeading().getVal()) * 1000);
         prevPositions.add(poseEstimate);
