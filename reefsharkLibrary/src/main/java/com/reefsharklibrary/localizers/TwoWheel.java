@@ -13,6 +13,9 @@ public class TwoWheel implements DeltaFinder {
     private double changeH;
 
     public TwoWheel(double perpendicularX, double parallelY) {
+        deltaX = new Point(0, 0);
+        deltaY = new Point(0, 0);
+        deltaH = new Point(0, 0);
         this.perpendicularX = perpendicularX;
         this.parallelY = parallelY;
 
