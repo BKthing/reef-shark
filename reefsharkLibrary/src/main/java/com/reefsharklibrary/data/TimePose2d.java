@@ -7,7 +7,7 @@ public class TimePose2d extends Pose2d {
 
     public TimePose2d(Pose2d pose) {
         super(pose.getX(), pose.getY(), pose.getHeading());
-        this.time = (System.currentTimeMillis())/1000;
+        this.time = (double) (System.currentTimeMillis() / 1000);
     }
 
     public TimePose2d(Pose2d pose, double time) {
@@ -17,7 +17,7 @@ public class TimePose2d extends Pose2d {
 
     public TimePose2d(double x, double y, double heading) {
         super(x, y, heading);
-        this.time = (System.currentTimeMillis())/1000;
+        this.time = (double) (System.currentTimeMillis() / 1000);
     }
 
     public TimePose2d(double x, double y, double heading, double time) {
