@@ -175,7 +175,7 @@ public class OldTwoWheelOldLocalizer implements OldLocalizer {
         TimePose2d cur = prevPositions.get(prevPositions.size()-1);
 
 
-        prevVelocities.add(new TimePose2d(cur.minus(old).scale( (cur.getTime()-old.getTime())), (cur.getTime()+old.getTime())/2));
+        prevVelocities.add(new TimePose2d(cur.minus(old).scale( 1/(cur.getTime()-old.getTime())), (cur.getTime()+old.getTime())/2));
     }
 
     @Override
@@ -195,7 +195,7 @@ public class OldTwoWheelOldLocalizer implements OldLocalizer {
         TimePose2d old = prevVelocities.get(oldIndex);
         TimePose2d cur = prevVelocities.get(prevVelocities.size()-1);
 
-        return cur.minus(old).scale((double) 1000/(cur.getTime()-old.getTime()));
+        return cur.minus(old).scale(1/(cur.getTime()-old.getTime()));
     }
 
     @Override

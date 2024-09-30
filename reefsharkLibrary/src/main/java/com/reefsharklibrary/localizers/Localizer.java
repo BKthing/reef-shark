@@ -27,8 +27,10 @@ public class Localizer {
     public void update(Point rawX, Point rawY, Point rawHeading) {
         deltaFinder.update(rawX, rawY, rawHeading);
 
-        poseEstimate = new TimePose2d(poseEstimate.plus(solver.getRelativeFieldMovement(deltaFinder.getDeltaX(),
-                            deltaFinder.getDeltaY(), deltaFinder.getDeltaHeading()).toPose(deltaFinder.getChangeHeading())), (solver.getPreviousTime()));
+        poseEstimate = new TimePose2d(poseEstimate.plus(
+                solver.getRelativeFieldMovement(deltaFinder.getDeltaX(), deltaFinder.getDeltaY(), deltaFinder.getDeltaHeading())
+                .toPose(deltaFinder.getChangeHeading())),
+                (solver.getPreviousTime()));
 //        poseEstimate = new TimePose2d((solver.getRelativeFieldMovement(deltaFinder.getDeltaX(),
 //                deltaFinder.getDeltaY(), deltaFinder.getDeltaHeading()).toPose(deltaFinder.getHeading().getVal())), (long)(deltaFinder.getHeading().getVal()) * 1000);
         prevPositions.add(poseEstimate);
@@ -65,15 +67,21 @@ public class Localizer {
         TimePose2d old = prevVelocities.get(oldIndex);
         TimePose2d cur = prevVelocities.get(prevVelocities.size()-1);
 
-        return cur.minus(old).scale((double) 1000/(cur.getTime()-old.getTime()));
+        return cur.minus(old).scale(1/(cur.getTime()-old.getTime()));
     }
 
     public void setPoseEstimate(Pose2d pose) {
         prevPositions.clear();
         prevVelocities.clear();
-        prevVelocities.add(new TimePose2d(new Pose2d(0, 0, 0)));
-        poseEstimate = new TimePose2d(pose, 0);
+        prevVelocities.add(new TimePose2d(new Pose2d(0, 0, 0), solver.getPreviousTime()));
+        poseEstimate = new TimePose2d(pose, solver.getPreviousTime());
         solver.setPoseEstimate(pose);
+    }
+
+    public void updatePoseEstimate(Pose2d pose) {
+        prevPositions.clear();
+        poseEstimate = new TimePose2d(pose, solver.getPreviousTime());
+        solver.updatePoseEstimate(pose);
     }
 
     public TimePose2d getPoseEstimate() {
@@ -92,7 +100,7 @@ public class Localizer {
         TimePose2d old = prevPositions.get(oldIndex);
         TimePose2d cur = prevPositions.get(prevPositions.size()-1);
 
-        prevVelocities.add(new TimePose2d(cur.minus(old).scale((double) 1000/(cur.getTime()-old.getTime())), (cur.getTime()+old.getTime())/2));
+        prevVelocities.add(new TimePose2d(cur.minus(old).scale(1/(cur.getTime()-old.getTime())), (cur.getTime()+old.getTime())/2));
     }
 
     public void setHistoryLimit(int maxHistorySize) {
@@ -102,5 +110,11 @@ public class Localizer {
         this.maxHistorySize = maxHistorySize+1;
     }
 
+    public DeltaFinder getDeltaFinder() {
+        return deltaFinder;
+    }
 
+    public Solver getSolver() {
+        return solver;
+    }
 }

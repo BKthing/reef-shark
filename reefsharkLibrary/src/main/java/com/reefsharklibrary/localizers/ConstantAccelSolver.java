@@ -112,7 +112,7 @@ public class ConstantAccelSolver implements Solver {
             throw new RuntimeException("K");
         }
 
-        double changeInTime = getFinalTime() - prevTime;
+        double changeInTime = getFinalTime();
 
         double Uf = Math.sqrt(A) * changeInTime + divideTerms(B, 2 * Math.sqrt(A));
         double Ui =  (divideTerms(B, 2 * Math.sqrt(A)));
