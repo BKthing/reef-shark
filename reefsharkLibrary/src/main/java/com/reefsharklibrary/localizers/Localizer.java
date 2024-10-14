@@ -13,8 +13,8 @@ public class Localizer {
     private TimePose2d poseEstimate = new TimePose2d(new Pose2d(0, 0, 0), 0);
     private int maxHistorySize = 200;
 
-    private LinkedList<TimePose2d> prevPositions = new LinkedList<>();
-    private LinkedList<TimePose2d> prevVelocities = new LinkedList<>();
+    private final LinkedList<TimePose2d> prevPositions = new LinkedList<>();
+    private final LinkedList<TimePose2d> prevVelocities = new LinkedList<>();
 
     public Localizer(DeltaFinder deltaFinder, Solver solver) {
         this.deltaFinder = deltaFinder;
