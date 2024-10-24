@@ -121,6 +121,11 @@ public class TrajectorySequenceBuilder {
         return this;
     }
 
+    public TrajectorySequenceBuilder callMarkerFromEnd(double distance, MarkerExecutable executable) {
+        globalCallMarkers.add(new IndexCallMarker(currentTrajectory().getTotalDistance() - distance, executable));
+        return this;
+    }
+
     public TrajectorySequenceBuilder callMarker(IndexCallMarker callMarker) {
         globalCallMarkers.add(callMarker);
         return this;
@@ -128,6 +133,11 @@ public class TrajectorySequenceBuilder {
 
     public TrajectorySequenceBuilder localCallMarker(double distance, MarkerExecutable executable) {
         currentTrajectory().addCallMarker(new IndexCallMarker(distance, executable));
+        return this;
+    }
+
+    public TrajectorySequenceBuilder localCallMarkerFromEnd(double distance, MarkerExecutable executable) {
+        currentTrajectory().addCallMarker(new IndexCallMarker(currentTrajectory().getAccumulatedDistance() - distance, executable));
         return this;
     }
 

@@ -150,4 +150,8 @@ public class TrajectorySequenceRunner {
         return followState;
     }
 
+    public boolean isFinished() {
+        return followState == FollowState.NO_TRAJECTORY;
+    }
+
 }
