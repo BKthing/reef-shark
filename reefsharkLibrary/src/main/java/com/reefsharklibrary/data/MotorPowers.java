@@ -58,6 +58,7 @@ public class MotorPowers {
         for (double power : motorPowers) {
             maxPower = Math.max(maxPower, Math.abs(power));
         }
+        maxPower = Math.min(maxPower, 1);
         return 1-maxPower;
     }
 

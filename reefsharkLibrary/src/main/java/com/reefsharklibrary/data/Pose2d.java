@@ -51,8 +51,16 @@ public class Pose2d {
         return new Pose2d(vector2d.minus(pose.getVector2d()), heading-pose.heading);
     }
 
+    public Pose2d minus(Pose2d pose, double upperRotationBound, double lowerRotationBound) {
+        return new Pose2d(vector2d.minus(pose.getVector2d()), Rotation.inRange(heading-pose.heading, upperRotationBound, lowerRotationBound));
+    }
+
     public Pose2d plus(Pose2d pose) {
         return new Pose2d(vector2d.plus(pose.getVector2d()), heading+pose.heading);
+    }
+
+    public Pose2d plus(Pose2d pose, double upperRotationBound, double lowerRotationBound) {
+        return new Pose2d(vector2d.plus(pose.getVector2d()), Rotation.inRange(heading+pose.heading, upperRotationBound, lowerRotationBound));
     }
 
     public Pose2d divide(Pose2d pose) {

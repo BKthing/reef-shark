@@ -24,7 +24,7 @@ public class RawTrajectory implements RawTrajectoryInterface {
     private double endDelay = 0;
     private double minTime = 0;
 
-    private double targetEndDistance = 4;
+    private double targetEndDistance = 14;
 
     private final double initialDistance;
     private double pathDistance = 0;

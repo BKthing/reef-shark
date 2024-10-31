@@ -3,6 +3,7 @@ package com.reefsharklibrary.pathing;
 import com.reefsharklibrary.data.MotorPowers;
 import com.reefsharklibrary.data.PIDCoeficients;
 import com.reefsharklibrary.data.Pose2d;
+import com.reefsharklibrary.data.Rotation;
 import com.reefsharklibrary.data.TimePose2d;
 import com.reefsharklibrary.data.Vector2d;
 
@@ -49,7 +50,7 @@ public class EndpointEstimator {
         return new Pose2d(
                 findEndPoint(naturalDecel.getX(), currentVelocity.getX(), currentPose.getX()),
                 findEndPoint(naturalDecel.getY(), currentVelocity.getY(), currentPose.getY()),
-                findEndPoint(naturalDecel.getHeading(), currentVelocity.getHeading(), currentPose.getHeading())
+                Rotation.inRange(findEndPoint(naturalDecel.getHeading(), currentVelocity.getHeading(), currentPose.getHeading()), Math.PI*2, 0)
         );
     }
 
@@ -75,14 +76,13 @@ public class EndpointEstimator {
             return new Pose2d(0, 0, 0);
         }
 
-        if (prevEndPositions.size()>5) {
-            prevEndPositions.removeFirst();
-        }
+        int oldIndex = Math.max(0, prevEndPositions.size()-5);
 
-        TimePose2d old = prevEndPositions.get(0);
+
+        TimePose2d old = prevEndPositions.get(oldIndex);
         TimePose2d cur = prevEndPositions.get(prevEndPositions.size()-1);
 
-        return new TimePose2d(cur.minus(old).scale((double) 1000/(cur.getTime()-old.getTime())), (cur.getTime()+old.getTime())/2);
+        return new TimePose2d(cur.minus(old, Math.PI, -Math.PI).scale(1/(cur.getTime()-old.getTime())), (cur.getTime()+old.getTime())/2);
     }
 
     public Pose2d getEstimatedEndPos() {

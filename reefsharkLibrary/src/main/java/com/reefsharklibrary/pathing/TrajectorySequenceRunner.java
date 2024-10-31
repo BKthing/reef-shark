@@ -40,6 +40,8 @@ public class TrajectorySequenceRunner {
 
     private double delayTime = 0;
 
+    private double forwardComponent = 1;
+
 
 
 
@@ -80,7 +82,7 @@ public class TrajectorySequenceRunner {
             case FOLLOW_TRAJECTORY -> {
                 trajectorySequence.getCurrentTrajectory().updateTargetPoint(poseEstimate);
                 trajectorySequence.updateGlobalTemporalMarkers();
-                pidLineController.calculatePowers(poseEstimate, poseVelocity, trajectorySequence.getCurrentTrajectory().getTargetDirectionalPose(), motorPowers);
+                pidLineController.calculatePowers(poseEstimate, poseVelocity, trajectorySequence.getCurrentTrajectory().getTargetDirectionalPose(), forwardComponent, motorPowers);
                 if (trajectorySequence.getCurrentTrajectory().targetEndpoint()) {//trajectorySequence.getCurrentTrajectory().targetEndpoint()
                     targetPose = trajectorySequence.getCurrentTrajectory().endPose();
 //                    followState = FollowState.NO_TRAJECTORY;
@@ -106,10 +108,13 @@ public class TrajectorySequenceRunner {
                 trajectorySequence.updateGlobalTemporalMarkers();
 
                 endpointEstimator.updateEndPos(poseEstimate, poseVelocity);
-                pidPointController.calculatePowers(endpointEstimator.getEstimatedEndPos(), endpointEstimator.getEstimatedEndVel(), targetPose, motorPowers);
+                pidPointController.calculatePowers(endpointEstimator.getEstimatedEndPos(), endpointEstimator.getEstimatedEndVel().getVector2d().toPose(0), targetPose, motorPowers);//endpointEstimator.getEstimatedEndVel()
+
+//                pidPointController.calculatePowers(poseEstimate, poseVelocity, targetPose, motorPowers);
+
 
                 //stops targeting endpoint if robot is close enough and has a low velocity
-                if (poseEstimate.minus(targetPose).inRange(trajectorySequence.getCurrentTrajectory().getEndError()) && poseVelocity.inRange(new Pose2d(.5, .5, Math.toRadians(2)))) {
+                if (poseEstimate.minus(targetPose).inRange(trajectorySequence.getCurrentTrajectory().getEndError()) && poseVelocity.inRange(new Pose2d(1, 1, Math.toRadians(2.5)))) {
                     delayTime = Math.max(trajectorySequence.getCurrentTrajectory().getMinTime() - trajectoryTime.seconds(), trajectorySequence.getCurrentTrajectory().getEndDelay());
                     trajectoryTime.reset();
                     followState = FollowState.NEXT_TRAJECTORY_DELAY;
@@ -121,6 +126,7 @@ public class TrajectorySequenceRunner {
                     trajectorySequence.nextTrajectory();
 
                     if (trajectorySequence.isFinished()) {
+                        motorPowers.reset();
                         followState = FollowState.NO_TRAJECTORY;
                     } else if (trajectorySequence.getCurrentTrajectory().getClass() == Trajectory.class) {
                         trajectoryTime.reset();
@@ -152,6 +158,10 @@ public class TrajectorySequenceRunner {
 
     public boolean isFinished() {
         return followState == FollowState.NO_TRAJECTORY;
+    }
+
+    public void setForwardComponent(double forwardComponent) {
+        this.forwardComponent = forwardComponent;
     }
 
 }
