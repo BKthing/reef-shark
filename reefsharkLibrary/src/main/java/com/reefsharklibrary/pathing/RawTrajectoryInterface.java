@@ -39,6 +39,8 @@ public interface RawTrajectoryInterface {
 
     void setTargetEndDistance(double targetEndDistance);
 
+    void setFirstTangentAngle(double tangentAngle);
+
     TrajectoryInterface build(ConstraintSet constraints, double resolution);
 
 }

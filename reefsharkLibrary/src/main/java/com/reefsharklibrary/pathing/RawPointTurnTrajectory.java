@@ -128,6 +128,11 @@ public class RawPointTurnTrajectory implements RawTrajectoryInterface {
         return new PointTurnTrajectory(positions.get(0), positions.get(1), constraints.getMaxAngularVel(), temporalCallMarkers, endError, endDelay, minTime, targetEndDistance/constraints.getWheelBaseRadius());
     }
 
+    @Override
+    public void setFirstTangentAngle(double tangentAngle) {
+
+    }
+
     private void sortTemporalMarkers() {
         Collections.sort(temporalCallMarkers);
     }

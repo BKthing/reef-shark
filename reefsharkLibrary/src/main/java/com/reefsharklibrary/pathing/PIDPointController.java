@@ -53,6 +53,36 @@ public class PIDPointController {
 
     }
 
+    public void calculatePowers(Pose2d currentPose, Pose2d currentVelocity, Pose2d targetPose, MotorPowers motorPowers, double maxLateralPower) {
+//        currentPose.enforceFinite();
+//        currentVelocity.enforceFinite();
+//        currentAcceleration.enforceFinite();
+//        targetPose.enforceFinite();
+//        targetMotionState.enforceFinite();
+
+        elapsedTime = timer.seconds();
+        if (elapsedTime > .5) {
+            elapsedTime = 0;
+        }
+        timer.reset();
+
+        Pose2d relDistance = targetPose.minus(currentPose).rotateVector(-currentPose.getHeading());
+
+        //added in order of importance
+        motorPowers.addHeading(updateHeadingPID(Rotation.inRange(relDistance.getHeading(), Math.PI, -Math.PI), currentVelocity.getHeading()));
+
+        Vector2d lateralComponent = updateLateralPID(relDistance.getVector2d(), currentVelocity.getVector2d().rotate(-currentPose.getHeading()));
+
+        double lateralPower = Math.abs(lateralComponent.getY())+Math.abs(lateralComponent.getX());
+
+        if (lateralPower>maxLateralPower) {
+            lateralComponent.scale(maxLateralPower/lateralPower);
+        }
+
+        motorPowers.addVector(lateralComponent);
+
+    }
+
     private double updateHeadingPID(double headingDiff, double headingVel) {
         headingI += headingDiff*headingPID.getI()*elapsedTime;
 

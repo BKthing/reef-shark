@@ -173,9 +173,16 @@ public class TrajectorySequenceBuilder {
     }
 
     public TrajectorySequenceBuilder addPath(Path pathSegment) {
-        if (pathSegment.isTangent(tangentAngle) || firstTrajectory) {
+        if (firstTrajectory) {
+
+            currentTrajectory().setFirstTangentAngle(pathSegment.getFirstTangentAngle());//pathSegment.getFirstTangentAngle()
+
             currentTrajectory().addTangentSet(pathSegment.generate(resolution), pathSegment.totalDistance());
+
             firstTrajectory = false;
+
+        } else if (pathSegment.isTangent(tangentAngle)) {
+            currentTrajectory().addTangentSet(pathSegment.generate(resolution), pathSegment.totalDistance());
         } else {
             trajectories.add(new RawTrajectory(currentTrajectory().getTotalDistance()));
             currentTrajectory().addSet(pathSegment.generate(resolution), pathSegment.totalDistance());

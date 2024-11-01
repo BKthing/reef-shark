@@ -30,15 +30,25 @@ public class SplineHeading implements Path {
         double headingInterval = Rotation.inRange(endHeading-startHeading+geometry.tangentAngle(0)-geometry.tangentAngle(geometry.getTotalDistance()), Math.PI, -Math.PI)*(resolution/geometry.getTotalDistance());
 
 //(endHeading-geometry.tangentAngle(geometry.getTotalDistance()))-(startHeading-geometry.tangentAngle(0))
+        path.add(geometry.startPoint().toPose(startHeading).toDirectionalPose(geometry.tangentAngle(0)));
+        heading.add(headingInterval);
 
-        for (double i = 0; i < geometry.getTotalDistance()-resolution; i += resolution) {
+        for (double i = resolution; i < geometry.getTotalDistance()-resolution; i += resolution) {
             double tanAngle = geometry.tangentAngle(i);
             path.add(geometry.getPoint(i).toPose(tanAngle+heading.get()).toDirectionalPose(tanAngle));
+
+            if ((path.get(path.size()-2).getX() == path.get(path.size()-1).getX()) && (path.get(path.size()-2).getY() == path.get(path.size()-1).getY())) {
+                throw new RuntimeException("Duplicate points in path");
+            }
 
             heading.add(headingInterval);
         }
 
         path.add(geometry.endPoint().toPose(endHeading).toDirectionalPose(geometry.tangentAngle(geometry.getTotalDistance())));
+
+        if ((path.get(path.size()-2).getX() == path.get(path.size()-1).getX()) && (path.get(path.size()-2).getY() == path.get(path.size()-1).getY())) {
+            throw new RuntimeException("Duplicate points in path");
+        }
 
         return path;
     }
@@ -56,6 +66,11 @@ public class SplineHeading implements Path {
     @Override
     public double totalDistance() {
         return geometry.getTotalDistance();
+    }
+
+    @Override
+    public double getFirstTangentAngle() {
+        return geometry.tangentAngle(0);
     }
 
     @Override

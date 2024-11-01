@@ -30,21 +30,27 @@ public class LinearHeading implements Path {
 
         double headingInterval = Rotation.inRange(endHeading-startHeading, Math.PI, -Math.PI)*(resolution/geometry.getTotalDistance());
 
-        if (!Double.isFinite(headingInterval)) {
-            throw new RuntimeException("Non finite heading interval");
-        }
+//        if (!Double.isFinite(headingInterval)) {
+//            throw new RuntimeException("Non finite heading interval");
+//        }
 
+        path.add(geometry.startPoint().toPose(startHeading).toDirectionalPose(geometry.tangentAngle(0)));
+        heading.add(headingInterval);
 
-        for (double i = 0; i < geometry.getTotalDistance()-resolution; i += resolution) {
-            if (!Double.isFinite(heading.get())) {
-                throw new RuntimeException("Non finite heading");
-            }
-
+        for (double i = resolution; i < geometry.getTotalDistance()-resolution; i += resolution) {
             path.add(geometry.getPoint(i).toPose(heading.get()).toDirectionalPose(geometry.tangentAngle(i)));
             heading.add(headingInterval);
+
+            if ((path.get(path.size()-2).getX() == path.get(path.size()-1).getX()) && (path.get(path.size()-2).getY() == path.get(path.size()-1).getY())) {
+                throw new RuntimeException("Duplicate points in path");
+            }
         }
 
         path.add(geometry.endPoint().toPose(endHeading).toDirectionalPose(geometry.tangentAngle(geometry.getTotalDistance())));
+
+        if ((path.get(path.size()-2).getX() == path.get(path.size()-1).getX()) && (path.get(path.size()-2).getY() == path.get(path.size()-1).getY())) {
+            throw new RuntimeException("Duplicate points in path");
+        }
 
         return path;
     }
@@ -62,6 +68,11 @@ public class LinearHeading implements Path {
     @Override
     public double totalDistance() {
         return geometry.getTotalDistance();
+    }
+
+    @Override
+    public double getFirstTangentAngle() {
+        return geometry.tangentAngle(0);
     }
 
     @Override

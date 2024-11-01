@@ -13,6 +13,8 @@ public interface Path {
 
     double totalDistance();
 
+    double getFirstTangentAngle();
+
     double getTangentAngle();
 
     boolean isTangent(double lastTangentAngle);

@@ -21,11 +21,21 @@ public class ConstantHeading implements Path {
     public List<DirectionalPose> generate(double resolution) {
         List<DirectionalPose> path = new ArrayList<>();
 
-        for (double i = 0; i < geometry.getTotalDistance()-resolution; i += resolution) {
+        path.add(geometry.startPoint().toPose(heading).toDirectionalPose(geometry.tangentAngle(0)));
+
+        for (double i = resolution; i < geometry.getTotalDistance()-resolution; i += resolution) {
             path.add(geometry.getPoint(i).toPose(heading).toDirectionalPose(geometry.tangentAngle(i)));
+
+            if ((path.get(path.size()-2).getX() == path.get(path.size()-1).getX()) && (path.get(path.size()-2).getY() == path.get(path.size()-1).getY())) {
+                throw new RuntimeException("Duplicate points in path");
+            }
         }
 
         path.add(geometry.endPoint().toPose(heading).toDirectionalPose(geometry.getTotalDistance()));
+
+        if ((path.get(path.size()-2).getX() == path.get(path.size()-1).getX()) && (path.get(path.size()-2).getY() == path.get(path.size()-1).getY())) {
+            throw new RuntimeException("Duplicate points in path");
+        }
 
         return path;
     }
@@ -43,6 +53,11 @@ public class ConstantHeading implements Path {
     @Override
     public double totalDistance() {
         return geometry.getTotalDistance();
+    }
+
+    @Override
+    public double getFirstTangentAngle() {
+        return geometry.tangentAngle(0);
     }
 
     @Override

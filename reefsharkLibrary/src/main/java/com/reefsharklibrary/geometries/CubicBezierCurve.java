@@ -46,7 +46,7 @@ public class CubicBezierCurve implements Geometry {
         dx = (Double t) -> - 3*Math.pow(t-1, 2)*p1.getX() - 3*(1-t)*(3*t-1)*p2.getX() + 3*(2-3*t)*t*p3.getX() + 3*Math.pow(t, 2)* p4.getX();
         dy = (Double t) -> - 3*Math.pow(t-1, 2)*p1.getY() - 3*(1-t)*(3*t-1)*p2.getY() + 3*(2-3*t)*t*p3.getY() + 3*Math.pow(t, 2)* p4.getY();
 
-        points = generate(.001);
+        points = generate(.01/estimateLength(5));//.03/estimateLength(5)
     }
 
     public CubicBezierCurve(Vector2d p1, Vector2d p2, Vector2d p3, Vector2d p4) {
@@ -67,7 +67,7 @@ public class CubicBezierCurve implements Geometry {
         dx = (Double t) -> - 3*Math.pow(t-1, 2)*p1.getX() - 3*(1-t)*(3*t-1)*p2.getX() + 3*(2-3*t)*t*p3.getX() + 3*Math.pow(t, 2)* p4.getX();
         dy = (Double t) -> - 3*Math.pow(t-1, 2)*p1.getY() - 3*(1-t)*(3*t-1)*p2.getY() + 3*(2-3*t)*t*p3.getY() + 3*Math.pow(t, 2)* p4.getY();
 
-        points = generate(.5/estimateLength(5));
+        points = generate(.02/estimateLength(5));//.03/estimateLength(5)
     }
 
     private double estimateLength(int points) {
@@ -89,10 +89,45 @@ public class CubicBezierCurve implements Geometry {
 
     @Override
     public double tangentAngle(double distance) {
+        Vector2d p1, p2;
+
+        int i = findClosestDataPoint(distance);
+
+        if (i<points.size()-1) {
+            p1 = points.get(i).getVector2d();
+            p2 = points.get(i+1).getVector2d();
+        } else if (i>0) {
+            p1 = points.get(i-1).getVector2d();
+            p2 = points.get(i).getVector2d();
+        } else {
+            throw new RuntimeException("Why is your path so short?");
+        }
+
+        return p2.minus(p1).getDirection();
+
         //set t = to the t of a point with the closest distance
-        double t = points.get(findClosestDataPoint(distance)).getT();
-        return Math.atan2(dy.apply(t), dx.apply(t));
+//        double t = points.get(findClosestDataPoint(distance)).getT();
+//        return Math.atan2(dy.apply(t), dx.apply(t));
     }
+
+    public double estimateTangentAngle(double distance) {
+        Vector2d p1, p2;
+
+        int i = findClosestDataPoint(distance);
+
+        if (i<points.size()-1) {
+            p1 = points.get(i).getVector2d();
+            p2 = points.get(i+1).getVector2d();
+        } else if (i>0) {
+            p1 = points.get(i-1).getVector2d();
+            p2 = points.get(i).getVector2d();
+        } else {
+            throw new RuntimeException("Why is your path so short?");
+        }
+
+        return p2.minus(p1).getDirection();
+    }
+
 
     @Override
     public double getTotalDistance() {

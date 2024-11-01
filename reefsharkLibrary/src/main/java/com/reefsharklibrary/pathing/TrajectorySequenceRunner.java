@@ -108,7 +108,7 @@ public class TrajectorySequenceRunner {
                 trajectorySequence.updateGlobalTemporalMarkers();
 
                 endpointEstimator.updateEndPos(poseEstimate, poseVelocity);
-                pidPointController.calculatePowers(endpointEstimator.getEstimatedEndPos(), endpointEstimator.getEstimatedEndVel().getVector2d().toPose(0), targetPose, motorPowers);//endpointEstimator.getEstimatedEndVel()
+                pidPointController.calculatePowers(endpointEstimator.getEstimatedEndPos(), endpointEstimator.getEstimatedEndVel().getVector2d().toPose(0), targetPose, motorPowers, forwardComponent*.7);//endpointEstimator.getEstimatedEndVel()
 
 //                pidPointController.calculatePowers(poseEstimate, poseVelocity, targetPose, motorPowers);
 
@@ -164,4 +164,7 @@ public class TrajectorySequenceRunner {
         this.forwardComponent = forwardComponent;
     }
 
+    public double getForwardComponent() {
+        return forwardComponent;
+    }
 }

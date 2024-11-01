@@ -24,7 +24,7 @@ public class RawTrajectory implements RawTrajectoryInterface {
     private double endDelay = 0;
     private double minTime = 0;
 
-    private double targetEndDistance = 14;
+    private double targetEndDistance = 5;
 
     private final double initialDistance;
     private double pathDistance = 0;
@@ -74,6 +74,11 @@ public class RawTrajectory implements RawTrajectoryInterface {
         }
 
         this.pathDistance += totalDistance;
+    }
+
+    @Override
+    public void setFirstTangentAngle(double tangentAngle) {
+        positions.set(0, positions.get(0).toDirectionalPose(tangentAngle));
     }
 
     public void addCallMarker(IndexCallMarker callMarker) {
