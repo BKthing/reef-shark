@@ -19,7 +19,7 @@ public class RawTrajectory implements RawTrajectoryInterface {
     private List<TemporalCallMarker> temporalCallMarkers = new ArrayList<>();
 
     private Pose2d followError = new Pose2d(1, 1, 3);
-    private Pose2d endError = new Pose2d(1, 1, Math.toRadians(2));
+    private Pose2d endError = new Pose2d(1.5, 1.5, Math.toRadians(3));
 
     private double endDelay = 0;
     private double minTime = 0;
