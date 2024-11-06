@@ -37,17 +37,17 @@ public class ConstantAccelSolver implements Solver {
 //        deltaHList.add(new Point(1.55, 0.21));
 //        deltaHList.add(new Point(0.12, 0.84));
 
-        deltaXList.add(new Point(0, 0));
-        deltaXList.add(new Point(0, 0));
-        deltaXList.add(new Point(0, 0));
+        deltaXList.add(new Point(-8, 0.5));
+        deltaXList.add(new Point(-6, 0.9));
+        deltaXList.add(new Point(-2, 3));
 
-        deltaYList.add(new Point(0, 0));
-        deltaYList.add(new Point(0, 0));
-        deltaYList.add(new Point(0, 0));
+        deltaYList.add(new Point(-4, 0.5));
+        deltaYList.add(new Point(-1, 1));
+        deltaYList.add(new Point(3, 3));
 
-        deltaHList.add(new Point(0, 0));
-        deltaHList.add(new Point(0, 0));
-        deltaHList.add(new Point(0, 0));
+        deltaHList.add(new Point(-2, .6));
+        deltaHList.add(new Point(1, 1.4));
+        deltaHList.add(new Point(4, 3.5));
     }
 
 
@@ -58,13 +58,13 @@ public class ConstantAccelSolver implements Solver {
         }
 
 
-        deltaXList.removeFirst();
-        deltaYList.removeFirst();
-        deltaHList.removeFirst();
-
-        deltaYList.add(deltaY);
-        deltaXList.add(deltaX);
-        deltaHList.add(deltaHeading);
+//        deltaXList.removeFirst();
+//        deltaYList.removeFirst();
+//        deltaHList.removeFirst();
+//
+//        deltaYList.add(deltaY);
+//        deltaXList.add(deltaX);
+//        deltaHList.add(deltaHeading);
 
         for (int i = 0; i <3; i ++) {
             deltaYList.get(i).setTimeOffset(prevTime);
@@ -144,7 +144,7 @@ public class ConstantAccelSolver implements Solver {
         double fieldDeltaY = ((-D2A * cosABCf) + (D2A * cosC) + (EBD * (sinK * fresnelCos + cosK * fresnelSin)))
                             - ((F2A * sinABCf) - (F2A * sinC) + (GBF * (-sinK * fresnelSin + cosK * fresnelCos)));
 
-        prevTime += changeInTime;
+//        prevTime += changeInTime;
 
 
         if (!Double.isFinite(fieldDeltaX)|| !Double.isFinite(fieldDeltaY)) {
@@ -240,7 +240,8 @@ public class ConstantAccelSolver implements Solver {
     }
 
     private double getFinalTime() {
-        return Math.min(deltaXList.get(2).getTime(), Math.min(deltaYList.get(2).getTime(), deltaHList.get(2).getTime()));
+//        return Math.min(deltaXList.get(2).getTime(), Math.min(deltaYList.get(2).getTime(), deltaHList.get(2).getTime()));
+        return 6;
     }
 
     private double divideTerms(double num, double den) {
