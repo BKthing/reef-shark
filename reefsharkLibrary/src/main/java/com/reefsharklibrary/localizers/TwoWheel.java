@@ -8,9 +8,10 @@ public class TwoWheel implements DeltaFinder {
     private final double parallelY;
 
     private Point deltaX, deltaY, deltaH;
+
     private double prevRawX = 0, prevRawY = 0, prevRawH = 0;
 
-    private double changeH;
+    private double changeH, changeX, changeY;
 
     public TwoWheel(double perpendicularX, double parallelY) {
         deltaX = new Point(0, 0);
@@ -24,10 +25,12 @@ public class TwoWheel implements DeltaFinder {
 
     public void update(Point rawX, Point rawY, Point rawHeading) {
         changeH = rawHeading.getVal()- prevRawH;
+        changeX = rawX.getVal() - prevRawX;
+        changeY = rawY.getVal() - prevRawY;
 
-        deltaH = new Point(deltaH.getVal()+changeH, rawHeading.getTime());
-        deltaX = new Point(deltaX.getVal() + (rawX.getVal() - prevRawX - perpendicularX * changeH), rawX.getTime());
-        deltaY = new Point(deltaY.getVal() + (rawY.getVal() - prevRawY - parallelY * changeH), rawY.getTime());
+        deltaH = new Point(changeH, rawHeading.getTime());
+        deltaX = new Point(changeX - perpendicularX * changeH, rawX.getTime());
+        deltaY = new Point(changeY - parallelY * changeH, rawY.getTime());
 
         prevRawX = rawX.getVal();
         prevRawY = rawY.getVal();
