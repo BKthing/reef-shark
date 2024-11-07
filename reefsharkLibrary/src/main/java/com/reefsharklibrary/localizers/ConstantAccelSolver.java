@@ -45,9 +45,9 @@ public class ConstantAccelSolver implements Solver {
         deltaYList.add(new Point(-1, 1));
         deltaYList.add(new Point(3, 3));
 
-        deltaHList.add(new Point(-2, .6));
+        deltaHList.add(new Point(.69, .39));
         deltaHList.add(new Point(1, 1.4));
-        deltaHList.add(new Point(4, 3.5));
+        deltaHList.add(new Point(2.15, 2.21));
     }
 
 
@@ -241,7 +241,7 @@ public class ConstantAccelSolver implements Solver {
 
     private double getFinalTime() {
 //        return Math.min(deltaXList.get(2).getTime(), Math.min(deltaYList.get(2).getTime(), deltaHList.get(2).getTime()));
-        return 6;
+        return 2.5;
     }
 
     private double divideTerms(double num, double den) {
