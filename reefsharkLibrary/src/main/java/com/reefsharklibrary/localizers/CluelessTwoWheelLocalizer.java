@@ -1,6 +1,7 @@
 package com.reefsharklibrary.localizers;
 
 import com.reefsharklibrary.data.Pose2d;
+import com.reefsharklibrary.data.Rotation;
 import com.reefsharklibrary.data.TimePose2d;
 
 import java.util.LinkedList;
@@ -9,10 +10,10 @@ import java.util.List;
 public class CluelessTwoWheelLocalizer{
     private final double perpendicularX;
     private final double parallelY;
-    private CluelessConstantAccelMath cluelessConstantAccelMath = new CluelessConstantAccelMath();
+    private final CluelessConstantAccelMath cluelessConstantAccelMath = new CluelessConstantAccelMath();
     private Pose2d poseEstimate = new Pose2d(0, 0, 0);
 
-    private double prevRawX = 0, prevRawY = 0, prevRawH = 0;
+    private double prevRelRawX = 0, prevRelRawY = 0, prevRawH = 0;
 
     public LinkedList<TimePose2d> prevPositions = new LinkedList<>();
     public LinkedList<TimePose2d> prevVelocities = new LinkedList<>();
@@ -25,12 +26,16 @@ public class CluelessTwoWheelLocalizer{
     }
 
     public void update(double rawX, double rawY, double rawH, double loopTime) {
-        double deltaH = rawH - prevRawH;
+        double deltaH = Rotation.inRange(rawH - prevRawH, Math.PI, -Math.PI);
 
-        double deltaX = rawX - prevRawX - perpendicularX * deltaH;
-        double deltaY = rawY - prevRawY - parallelY * deltaH;
+        double relRawX = rawX - perpendicularX * deltaH;
+        double relRawY = rawY - parallelY * deltaH;
 
-        poseEstimate = cluelessConstantAccelMath.calculate(loopTime, new Pose2d(deltaX, deltaY, deltaH), poseEstimate);
+        double deltaX = relRawX - prevRelRawX ;
+        double deltaY = relRawY - prevRelRawY;
+
+        poseEstimate = cluelessConstantAccelMath.calculate(loopTime, new Pose2d(deltaX, deltaY, deltaH), poseEstimate);//.minus(new Pose2d(perpendicularX * deltaH, parallelY * deltaH, 0));
+
 
         prevPositions.add(new TimePose2d(poseEstimate));
         updatePoseVelocitiy();
@@ -42,6 +47,10 @@ public class CluelessTwoWheelLocalizer{
         if (prevVelocities.size()>maxHistorySize) {
             prevVelocities.removeFirst();
         }
+
+        prevRawH = rawH;
+        prevRelRawX = relRawX;
+        prevRelRawY = relRawY;
 
     }
 
@@ -73,8 +82,8 @@ public class CluelessTwoWheelLocalizer{
     }
 
     public void clearDeltas(double rawX, double rawY, double rawH) {
-        prevRawX = rawX;
-        prevRawY = rawY;
+        prevRelRawX = rawX;
+        prevRelRawY = rawY;
         prevRawH = rawH;
 
     }
