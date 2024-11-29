@@ -24,7 +24,7 @@ public class PIDPointController {
 
 
 
-    PIDPointController(PIDCoeficients lateralPID, PIDCoeficients headingPID, double trackWidth) {
+    public PIDPointController(PIDCoeficients lateralPID, PIDCoeficients headingPID, double trackWidth) {
         this.lateralPID = lateralPID;
 
         //adjust the PID for the robots track width (converts radians -> circumference)

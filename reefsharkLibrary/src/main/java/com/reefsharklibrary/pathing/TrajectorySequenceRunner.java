@@ -2,7 +2,6 @@ package com.reefsharklibrary.pathing;
 
 import com.reefsharklibrary.data.ConstraintSet;
 import com.reefsharklibrary.data.MotorPowers;
-import com.reefsharklibrary.data.PIDCoeficients;
 import com.reefsharklibrary.data.Pose2d;
 import com.reefsharklibrary.data.Rotation;
 import com.reefsharklibrary.misc.ElapsedTimer;
@@ -23,8 +22,6 @@ public class TrajectorySequenceRunner {
 
     private TrajectorySequence trajectorySequence;
     Rotation currentRotation = new Rotation(0, 2*Math.PI);
-    private final PIDCoeficients lateralPID;
-    private final PIDCoeficients headingPID;
 
     private final PIDLineController pidLineController;
 
@@ -45,12 +42,10 @@ public class TrajectorySequenceRunner {
 
 
 
-    public TrajectorySequenceRunner(PIDCoeficients lateralPID, PIDCoeficients headingPID, Pose2d naturalDecel, double trackWidth, ConstraintSet constraintSet) {
-        this.lateralPID = lateralPID;
-        this.headingPID = headingPID;
-        pidLineController = new PIDLineController(lateralPID, headingPID, trackWidth, constraintSet.getLateralComponentScalar());
-        endpointEstimator = new EndpointEstimator(lateralPID, headingPID, naturalDecel);
-        pidPointController = new PIDPointController(lateralPID, headingPID, trackWidth);
+    public TrajectorySequenceRunner(double trackWidth, ConstraintSet constraintSet) {
+        pidLineController = new PIDLineController(constraintSet.getLateralPID(), constraintSet.getHeadingPID(), trackWidth, constraintSet.getLateralComponentScalar());
+        endpointEstimator = new EndpointEstimator(constraintSet.getPointPID(), constraintSet.getHeadingPointPID(), constraintSet.getNaturalDecel());
+        pidPointController = new PIDPointController(constraintSet.getPointPID(), constraintSet.getHeadingPointPID(), trackWidth);
         this.constraintSet = constraintSet;
     }
 
@@ -82,7 +77,7 @@ public class TrajectorySequenceRunner {
             case FOLLOW_TRAJECTORY -> {
                 trajectorySequence.getCurrentTrajectory().updateTargetPoint(poseEstimate);
                 trajectorySequence.updateGlobalTemporalMarkers();
-                pidLineController.calculatePowers(poseEstimate, poseVelocity, trajectorySequence.getCurrentTrajectory().getTargetDirectionalPose(), forwardComponent, motorPowers);
+                pidLineController.calculatePowers(poseEstimate, poseVelocity, trajectorySequence.getCurrentTrajectory().getTargetDirectionalPose(), forwardComponent*trajectorySequence.getCurrentTrajectory().getForwardComponent(), trajectorySequence.getCurrentTrajectory().getHeadingRadiansPerInch(), motorPowers);
                 if (trajectorySequence.getCurrentTrajectory().targetEndpoint()) {//trajectorySequence.getCurrentTrajectory().targetEndpoint()
                     targetPose = trajectorySequence.getCurrentTrajectory().endPose();
 //                    followState = FollowState.NO_TRAJECTORY;
@@ -108,13 +103,13 @@ public class TrajectorySequenceRunner {
                 trajectorySequence.updateGlobalTemporalMarkers();
 
                 endpointEstimator.updateEndPos(poseEstimate, poseVelocity);
-                pidPointController.calculatePowers(endpointEstimator.getEstimatedEndPos().getVector2d().toPose(poseEstimate.getHeading()), endpointEstimator.getEstimatedEndVel().getVector2d().toPose(poseVelocity.getHeading()), targetPose, motorPowers, forwardComponent*.7);//endpointEstimator.getEstimatedEndVel()
-
+                pidPointController.calculatePowers(endpointEstimator.getEstimatedEndPos(), endpointEstimator.getEstimatedEndVel(), targetPose, motorPowers, Math.max(forwardComponent*.6, .2));//endpointEstimator.getEstimatedEndVel()
+//.getVector2d().toPose(poseEstimate.getHeading())    .getVector2d().toPose(poseVelocity.getHeading())
 //                pidPointController.calculatePowers(poseEstimate, poseVelocity, targetPose, motorPowers);
 
 
                 //stops targeting endpoint if robot is close enough and has a low velocity
-                if (poseEstimate.minus(targetPose).inRange(trajectorySequence.getCurrentTrajectory().getEndError()) && poseVelocity.inRange(new Pose2d(1, 1, Math.toRadians(2.5)))) {
+                if (poseEstimate.minus(targetPose).inRange(trajectorySequence.getCurrentTrajectory().getEndError()) && poseVelocity.inRange(new Pose2d(1.5, 1.5, Math.toRadians(4)))) {
                     delayTime = Math.max(trajectorySequence.getCurrentTrajectory().getMinTime() - trajectoryTime.seconds(), trajectorySequence.getCurrentTrajectory().getEndDelay());
                     trajectoryTime.reset();
                     followState = FollowState.NEXT_TRAJECTORY_DELAY;

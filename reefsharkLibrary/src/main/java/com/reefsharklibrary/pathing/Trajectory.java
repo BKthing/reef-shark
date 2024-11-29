@@ -1,6 +1,7 @@
 package com.reefsharklibrary.pathing;
 
 import com.reefsharklibrary.data.DirectionalPose;
+import com.reefsharklibrary.data.Rotation;
 import com.reefsharklibrary.misc.ElapsedTimer;
 import com.reefsharklibrary.pathing.data.IndexCallMarker;
 import com.reefsharklibrary.data.Pose2d;
@@ -8,7 +9,6 @@ import com.reefsharklibrary.pathing.data.TemporalCallMarker;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
 
 public class Trajectory implements TrajectoryInterface {
 
@@ -33,6 +33,8 @@ public class Trajectory implements TrajectoryInterface {
     private final double minTime;
     private final int targetEndPositionThreshold;
 
+    private final double resolution;
+
 
     public Trajectory(
             List<DirectionalPose> positions,
@@ -42,7 +44,8 @@ public class Trajectory implements TrajectoryInterface {
             Pose2d endError,
             double endDelay,
             double minTime,
-            int targetEndPositionThreshold
+            int targetEndPositionThreshold,
+            double resolution
     ) {
         this.positions = positions;
         this.pose2dpositions = pose2dList();
@@ -53,6 +56,7 @@ public class Trajectory implements TrajectoryInterface {
         this.endDelay = endDelay;
         this.minTime = minTime;
         this.targetEndPositionThreshold = targetEndPositionThreshold;
+        this.resolution = resolution;
     }
 
     private List<Pose2d> pose2dList() {
@@ -128,6 +132,39 @@ public class Trajectory implements TrajectoryInterface {
     @Override
     public double getTargetDirection() {
         return positions.get(currentPoseIndex).getDirection();
+    }
+
+
+    @Override
+    public double getForwardComponent() {
+        //scales down the power as the robot gets closer to the end and as it has to turn more
+        return Math.max((1-.75/(Math.pow((.06*(positions.size()-currentPoseIndex)*resolution), 4)+1))/(1+5*Math.abs(getRadiansPerInch(8))), .2);
+    }
+
+    @Override
+    public double getRadiansPerInch(double lookAheadDistance) {
+        int lookAhead = (int) Math.round(lookAheadDistance/resolution);
+        DirectionalPose difference;
+
+        if (currentPoseIndex<poseList().size()-1) {
+            difference = poseList().get(Math.min(currentPoseIndex+lookAhead, poseList().size()-1)).minus(poseList().get(currentPoseIndex)).toDirectionalPose(Rotation.inRange(poseList().get(Math.min(currentPoseIndex+lookAhead, poseList().size()-1)).getDirection()-poseList().get(currentPoseIndex).getDirection(), Math.PI, -Math.PI));
+        } else {
+            difference = poseList().get(currentPoseIndex).minus(poseList().get(currentPoseIndex-1)).toDirectionalPose(Rotation.inRange(poseList().get(currentPoseIndex).getDirection()-poseList().get(currentPoseIndex-1).getDirection(), Math.PI, -Math.PI));
+        }
+
+        return difference.getDirection()/difference.getVector2d().getMagnitude();
+    }
+
+    @Override
+    public double getHeadingRadiansPerInch() {
+        Pose2d difference;
+        if (currentPoseIndex<poseList().size()-1) {
+            difference = poseList().get(currentPoseIndex+1).minus(poseList().get(currentPoseIndex));
+        } else {
+            difference = poseList().get(currentPoseIndex).minus(poseList().get(currentPoseIndex-1));
+        }
+
+        return difference.getHeading()/difference.getVector2d().getMagnitude();
     }
 
     @Override

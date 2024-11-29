@@ -47,7 +47,7 @@ public class PIDLineController {
     }
 
     //TODO: possibly change it to rotate vector, apply pid and then un-rotate so that its faster
-    public void calculatePowers(Pose2d currentPose, Pose2d currentVelocity, DirectionalPose targetPose, double forwardComponent, MotorPowers motorPowers) {
+    public void calculatePowers(Pose2d currentPose, Pose2d currentVelocity, DirectionalPose targetPose, double forwardComponent, double radiansPerInch, MotorPowers motorPowers) {
 //        currentPose.enforceFinite();
 //        currentVelocity.enforceFinite();
 //        currentAcceleration.enforceFinite();
@@ -67,9 +67,9 @@ public class PIDLineController {
 //        Vector2d velocityComponent = targetMotionState.getVector2d().minus(currentVelocity.getVector2d()).rotate(-velAngle);
 
         //added in order of importance
-        motorPowers.addHeading(updateHeadingPID(Rotation.inRange(targetPose.getHeading()-currentPose.getHeading(), Math.PI, -Math.PI), currentVelocity.getHeading()));
+        motorPowers.addHeading(updateHeadingPID(Rotation.inRange(targetPose.getHeading()-currentPose.getHeading(), Math.PI, -Math.PI), currentVelocity.getHeading()-radiansPerInch*currentVelocity.getVector2d().rotate(-velAngle).getX()));
         motorPowers.addVector(updateLateralPID(new Vector2d(0, lateralDistanceComponent).rotate(headingVelDiff), new Vector2d(0, velocityComponent).rotate(headingVelDiff)));//.scale(lateralComponentScalar)
-        motorPowers.addVector(new Vector2d(forwardComponent, 0).rotate(headingVelDiff));
+        motorPowers.addVector(new Vector2d(forwardComponent, 0).rotate(headingVelDiff));//forwardComponent
     }
 
     private double updateHeadingPID(double headingDiff, double headingVel) {

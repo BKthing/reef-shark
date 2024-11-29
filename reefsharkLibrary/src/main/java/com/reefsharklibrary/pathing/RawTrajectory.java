@@ -18,8 +18,8 @@ public class RawTrajectory implements RawTrajectoryInterface {
     private List<IndexCallMarker> callMarkers = new ArrayList<>();
     private List<TemporalCallMarker> temporalCallMarkers = new ArrayList<>();
 
-    private Pose2d followError = new Pose2d(1, 1, 3);
-    private Pose2d endError = new Pose2d(1.5, 1.5, Math.toRadians(3));
+    private Pose2d followError = new Pose2d(1.5, 1.5, Math.toRadians(4));
+    private Pose2d endError = new Pose2d(1.5, 1.5, Math.toRadians(4));
 
     private double endDelay = 0;
     private double minTime = 0;
@@ -125,7 +125,7 @@ public class RawTrajectory implements RawTrajectoryInterface {
         }
 
         //calculateVelocities(constraints, resolution)
-        return new Trajectory(positions, callMarkers, temporalCallMarkers, followError, endError, endDelay, minTime, positions.size() - 1 - (int) (targetEndDistance / resolution));
+        return new Trajectory(positions, callMarkers, temporalCallMarkers, followError, endError, endDelay, minTime, positions.size() - 1 - (int) (targetEndDistance / resolution), resolution);
     }
 
     private void sortTemporalMarkers() {
@@ -140,7 +140,7 @@ public class RawTrajectory implements RawTrajectoryInterface {
         for (IndexCallMarker callMarker : callMarkers) {
             callMarker.setCallPosition(
                     //Assigns closest list position to markers
-                    Math.min((int) Math.round(callMarker.getCallDistance() / resolution), positions.size() - 1)
+                    Math.max(Math.min((int) Math.round(callMarker.getCallDistance() / resolution), positions.size() - 1), 0)
             );
         }
     }

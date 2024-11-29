@@ -22,6 +22,12 @@ public interface TrajectoryInterface {
 
     double getTargetDirection();
 
+    double getForwardComponent();
+
+    double getHeadingRadiansPerInch();
+
+    double getRadiansPerInch(double lookAheadDistance);
+
     int getTargetPoseIndex();
 
     boolean targetEndpoint();

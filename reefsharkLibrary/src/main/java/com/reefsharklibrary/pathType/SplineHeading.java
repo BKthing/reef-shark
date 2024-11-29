@@ -81,6 +81,6 @@ public class SplineHeading implements Path {
     @Override
     public boolean isTangent(double lastTangentAngle) {
         //returns true if angles are within 1 degree of eachother
-        return Math.abs(geometry.tangentAngle(0)-lastTangentAngle)<Math.toRadians(1);
+        return Math.abs(Rotation.inRange(geometry.tangentAngle(0)-lastTangentAngle, Math.PI, -Math.PI))<Math.toRadians(1);
     }
 }

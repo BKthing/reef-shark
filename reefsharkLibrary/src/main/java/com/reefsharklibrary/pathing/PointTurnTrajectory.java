@@ -33,8 +33,10 @@ public class PointTurnTrajectory implements TrajectoryInterface {
 
     private final double targetEndpointAngle;
 
+    private final double resolution;
 
-    public PointTurnTrajectory(Pose2d startPose, Pose2d endPose, double turnVelocity, List<TemporalCallMarker> localTemporalMarkers, Pose2d endError, double endDelay, double minTime, double targetEndpointAngle) {
+
+    public PointTurnTrajectory(Pose2d startPose, Pose2d endPose, double turnVelocity, List<TemporalCallMarker> localTemporalMarkers, Pose2d endError, double endDelay, double minTime, double targetEndpointAngle, double resolution) {
         this.endError = endError;
         this.endDelay = endDelay;
         this.minTime = minTime;
@@ -47,6 +49,7 @@ public class PointTurnTrajectory implements TrajectoryInterface {
 
         this.localTemporalMarkers = localTemporalMarkers;
 
+        this.resolution = resolution;
     }
 
 
@@ -114,6 +117,21 @@ public class PointTurnTrajectory implements TrajectoryInterface {
     @Override
     public boolean targetEndpoint() {
         return Math.abs(Rotation.inRange(endPose.getHeading() - targetPoint.getHeading(), Math.PI, -Math.PI)) < targetEndpointAngle;
+    }
+
+    @Override
+    public double getForwardComponent() {
+        return 0;
+    }
+
+    @Override
+    public double getRadiansPerInch(double lookAheadDistance) {
+        return 0;
+    }
+
+    @Override
+    public double getHeadingRadiansPerInch() {
+        return 0;
     }
 
     @Override

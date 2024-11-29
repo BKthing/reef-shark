@@ -2,6 +2,7 @@ package com.reefsharklibrary.pathType;
 
 import com.reefsharklibrary.data.DirectionalPose;
 import com.reefsharklibrary.data.Pose2d;
+import com.reefsharklibrary.data.Rotation;
 import com.reefsharklibrary.geometries.Geometry;
 
 import java.util.ArrayList;
@@ -68,6 +69,6 @@ public class ConstantHeading implements Path {
     @Override
     public boolean isTangent(double lastTangentAngle) {
         //returns true if angles are within 1 degree of eachother
-        return Math.abs(geometry.tangentAngle(0)-lastTangentAngle)<Math.toRadians(1);
+        return Math.abs(Rotation.inRange(geometry.tangentAngle(0)-lastTangentAngle, Math.PI, -Math.PI))<Math.toRadians(1);
     }
 }

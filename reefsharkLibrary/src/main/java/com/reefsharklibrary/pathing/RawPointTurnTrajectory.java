@@ -125,7 +125,7 @@ public class RawPointTurnTrajectory implements RawTrajectoryInterface {
             throw new RuntimeException("Invalid turn points");
         }
 
-        return new PointTurnTrajectory(positions.get(0), positions.get(1), constraints.getMaxAngularVel(), temporalCallMarkers, endError, endDelay, minTime, targetEndDistance/constraints.getWheelBaseRadius());
+        return new PointTurnTrajectory(positions.get(0), positions.get(1), constraints.getMaxAngularVel(), temporalCallMarkers, endError, endDelay, minTime, targetEndDistance/constraints.getWheelBaseRadius(), resolution);
     }
 
     @Override

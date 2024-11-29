@@ -10,7 +10,9 @@ public class ConstraintSet {
     private final Pose2d naturalDecel;
 
     private final PIDCoeficients lateralPID;
+    private final PIDCoeficients pointPID;
     private final PIDCoeficients headingPID;
+    private final PIDCoeficients headingPointPID;
 
     private final double wheelBaseRadius;
 
@@ -21,12 +23,14 @@ public class ConstraintSet {
 
 
 
-    public ConstraintSet(PIDCoeficients lateralPID, PIDCoeficients headingPID, VelConstraint velConstraint, AngVelConstraint angVelConstraint, Pose2d naturalDecel, double wheelBaseRadius, double strafeScalar, double lateralComponentScalar) {
+    public ConstraintSet(PIDCoeficients lateralPID, PIDCoeficients pointPID, PIDCoeficients headingPID, PIDCoeficients headingPointPID, VelConstraint velConstraint, AngVelConstraint angVelConstraint, Pose2d naturalDecel, double wheelBaseRadius, double strafeScalar, double lateralComponentScalar) {
         this.angVelConstraint = angVelConstraint;
         this.velConstraint = velConstraint;
         this.naturalDecel = naturalDecel;
         this.lateralPID = lateralPID;
+        this.pointPID = pointPID;
         this.headingPID = headingPID;
+        this.headingPointPID = headingPointPID;
         this.wheelBaseRadius = wheelBaseRadius;
         this.strafeScalar = strafeScalar;
         this.lateralComponentScalar = lateralComponentScalar;
@@ -96,8 +100,16 @@ public class ConstraintSet {
         return lateralPID;
     }
 
+    public PIDCoeficients getPointPID() {
+        return pointPID;
+    }
+
     public PIDCoeficients getHeadingPID() {
         return headingPID;
+    }
+
+    public PIDCoeficients getHeadingPointPID() {
+        return headingPointPID;
     }
 
     public double getWheelBaseRadius() {
