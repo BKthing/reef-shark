@@ -109,7 +109,7 @@ public class TrajectorySequenceRunner {
 
 
                 //stops targeting endpoint if robot is close enough and has a low velocity
-                if (poseEstimate.minus(targetPose).inRange(trajectorySequence.getCurrentTrajectory().getEndError()) && poseVelocity.inRange(new Pose2d(1.5, 1.5, Math.toRadians(4)))) {
+                if (poseEstimate.minus(targetPose).inRange(trajectorySequence.getCurrentTrajectory().getEndError()) && poseVelocity.inRange(new Pose2d(1.5, 1.5, Math.toRadians(5)))) {
                     delayTime = Math.max(trajectorySequence.getCurrentTrajectory().getMinTime() - trajectoryTime.seconds(), trajectorySequence.getCurrentTrajectory().getEndDelay());
                     trajectoryTime.reset();
                     followState = FollowState.NEXT_TRAJECTORY_DELAY;
