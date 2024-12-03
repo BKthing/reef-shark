@@ -113,6 +113,10 @@ public class PointTurnTrajectory implements TrajectoryInterface {
         }
     }
 
+    @Override
+    public void clearCallMarkers() {
+
+    }
 
     @Override
     public boolean targetEndpoint() {

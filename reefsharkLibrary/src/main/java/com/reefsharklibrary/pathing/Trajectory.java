@@ -113,9 +113,18 @@ public class Trajectory implements TrajectoryInterface {
         }
     }
 
+
+
     private void updateTemporalMarkers() {
         while (temporalMarkerIndex<localTemporalMarkers.size() && localTemporalMarkers.get(temporalMarkerIndex).callTime(timer.seconds())) {
             temporalMarkerIndex++;
+        }
+    }
+
+    @Override
+    public void clearCallMarkers() {
+        for (; temporalMarkerIndex<localTemporalMarkers.size(); temporalMarkerIndex++) {
+            callMarkers.get(callMarkerIndex).run();
         }
     }
 

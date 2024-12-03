@@ -16,6 +16,8 @@ public interface TrajectoryInterface {
 
     void updateTargetPoint(Pose2d pose);
 
+    void clearCallMarkers();
+
     Pose2d getTargetPose();
 
     DirectionalPose getTargetDirectionalPose();
