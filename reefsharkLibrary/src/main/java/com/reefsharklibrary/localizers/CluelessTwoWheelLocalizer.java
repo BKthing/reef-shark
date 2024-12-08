@@ -33,14 +33,14 @@ public class CluelessTwoWheelLocalizer{
     public void update(double rawX, double rawY, double rawH, double loopTime) {
         double deltaH = Rotation.inRange(rawH - prevRawH, Math.PI, -Math.PI);
 
-        double deltaX = rawX - prevRawX - perpendicularX * (rawH-originalRawHeading);
-        double deltaY = rawY - prevRawY - parallelY * (rawH-originalRawHeading);
+        double deltaX = rawX - prevRawX + parallelY * deltaH;
+        double deltaY = rawY - prevRawY - perpendicularX * deltaH;
 
-        heading += deltaH;
-        x += deltaX;
-        y += deltaY;
+//        heading += deltaH;
+//        x += deltaX;
+//        y += deltaY;
 
-        poseEstimate = new Pose2d(x, y, heading);//cluelessConstantAccelMath.calculate(loopTime, new Pose2d(deltaX, deltaY, deltaH), poseEstimate);//.minus(new Pose2d(perpendicularX * deltaH, parallelY * deltaH, 0));
+        poseEstimate = cluelessConstantAccelMath.calculate(loopTime, new Pose2d(deltaX, deltaY, deltaH), poseEstimate);//.minus(new Pose2d(perpendicularX * deltaH, parallelY * deltaH, 0));
 
 
         prevPositions.add(new TimePose2d(poseEstimate));
@@ -55,8 +55,8 @@ public class CluelessTwoWheelLocalizer{
         }
 
         prevRawH = rawH;
-        prevRawX = deltaX;
-        prevRawY = deltaY;
+        prevRawX = rawX;
+        prevRawY = rawY;
 
     }
 

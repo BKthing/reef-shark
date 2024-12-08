@@ -3,6 +3,7 @@ package com.reefsharklibrary.localizers;
 import static org.apache.commons.math3.util.Precision.EPSILON;
 
 import com.reefsharklibrary.data.Pose2d;
+import com.reefsharklibrary.data.Rotation;
 import com.reefsharklibrary.data.TimePose2d;
 import com.reefsharklibrary.data.Vector2d;
 
@@ -78,7 +79,7 @@ public class OldTwoWheelOldLocalizer implements OldLocalizer {
         double[] deltas = new double[] {
                 parallel-prevWheelPositions[0],
                 perpendicular-prevWheelPositions[1],
-               heading-prevHeading
+                Rotation.inRange(heading-prevHeading, Math.PI, -Math.PI)
         };
 
         prevWheelPositions[0] = parallel;
@@ -133,6 +134,14 @@ public class OldTwoWheelOldLocalizer implements OldLocalizer {
         Pose2d fieldPoseDelta = new Pose2d(fieldPositionDelta.rotate(fieldPose.getHeading()), robotPoseDelta.getHeading());
 
         return fieldPose.plus(fieldPoseDelta);
+    }
+
+
+    @Override
+    public void clearDeltas(double parallel, double perpendicular, double heading) {
+        prevWheelPositions[0] = parallel;
+        prevWheelPositions[1] = perpendicular;
+        prevHeading = heading;
     }
 
     private static boolean approxEquals(double d1, double d2) {

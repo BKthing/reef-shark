@@ -15,6 +15,7 @@ public interface OldLocalizer {
 
     Pose2d getPoseVelocity();
     Pose2d getPoseAcceleration();
+    void clearDeltas(double parallel, double perpendicular, double heading);
 
     void setHistoryLimit(int maxHistorySize);
 
