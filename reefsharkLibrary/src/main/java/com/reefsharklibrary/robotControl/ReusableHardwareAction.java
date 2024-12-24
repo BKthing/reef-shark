@@ -8,7 +8,7 @@ public class ReusableHardwareAction {
     private volatile HardwareAction currentAction = () -> queued = false;
 
     public ReusableHardwareAction(HardwareQueue hardwareQueue) {
-        this.hardwareQueue = new HardwareQueue();
+        this.hardwareQueue = hardwareQueue;
     }
 
     public void setAndQueueAction(HardwareAction hardwareAction) {
