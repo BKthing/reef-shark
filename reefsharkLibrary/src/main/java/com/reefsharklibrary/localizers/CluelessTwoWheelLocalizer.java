@@ -36,10 +36,6 @@ public class CluelessTwoWheelLocalizer{
         double deltaX = rawX - prevRawX + parallelY * deltaH;
         double deltaY = rawY - prevRawY - perpendicularX * deltaH;
 
-//        heading += deltaH;
-//        x += deltaX;
-//        y += deltaY;
-
         poseEstimate = cluelessConstantAccelMath.calculate(loopTime, new Pose2d(deltaX, deltaY, deltaH), poseEstimate);//.minus(new Pose2d(perpendicularX * deltaH, parallelY * deltaH, 0));
 
 
