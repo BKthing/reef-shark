@@ -14,6 +14,8 @@ public class PIDPointController {
 
     private double headingI = 0;
 
+    private double f = 0;
+
     private Vector2d lateralI = new Vector2d(0, 0);
 
     private double lateralComponentScalar;
@@ -29,6 +31,15 @@ public class PIDPointController {
 
         //adjust the PID for the robots track width (converts radians -> circumference)
         this.headingPID = new PIDCoeficients(headingPID.getP()*trackWidth, headingPID.getI()*trackWidth, headingPID.getD()*trackWidth);
+    }
+
+    public PIDPointController(PIDCoeficients lateralPID, PIDCoeficients headingPID, double trackWidth, double f) {
+        this.lateralPID = lateralPID;
+
+        //adjust the PID for the robots track width (converts radians -> circumference)
+        this.headingPID = new PIDCoeficients(headingPID.getP()*trackWidth, headingPID.getI()*trackWidth, headingPID.getD()*trackWidth);
+
+        this.f = f;
     }
 
     //TODO: possibly change it to rotate vector, apply pid and then un-rotate so that its faster
@@ -86,15 +97,15 @@ public class PIDPointController {
     private double updateHeadingPID(double headingDiff, double headingVel) {
         headingI += headingDiff*headingPID.getI()*elapsedTime;
 
-        return headingDiff*headingPID.getP() + headingI - headingVel*headingPID.getD();
+        return headingDiff*headingPID.getP() + headingI - headingVel*headingPID.getD() + f*Math.signum(headingDiff);
     }
 
     private Vector2d updateLateralPID(Vector2d posDiff, Vector2d posVel) {
         lateralI = lateralI.plus(posDiff.multiply(lateralPID.getI()*elapsedTime));
 
         return new Vector2d(
-                posDiff.getX()*lateralPID.getP() + lateralI.getX() - posVel.getX()*lateralPID.getD(),
-                posDiff.getY()*lateralPID.getP() + lateralI.getY() - posVel.getY()*lateralPID.getD()
+                posDiff.getX()*lateralPID.getP() + lateralI.getX() - posVel.getX()*lateralPID.getD() + f *Math.signum(posDiff.getX()),
+                posDiff.getY()*lateralPID.getP() + lateralI.getY() - posVel.getY()*lateralPID.getD() + f *Math.signum(posDiff.getY())
         );
     }
 }
